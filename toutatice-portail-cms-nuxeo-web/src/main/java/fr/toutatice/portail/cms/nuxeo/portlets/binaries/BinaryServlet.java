@@ -20,6 +20,7 @@ import java.io.OutputStream;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.portlet.PortletContext;
@@ -40,6 +41,7 @@ import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cache.services.CacheInfo;
+import org.osivia.portal.api.cms.UniversalID;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.log.LoggerMessage;
 import org.osivia.portal.api.tokens.ITokenService;
@@ -216,7 +218,13 @@ public class BinaryServlet extends HttpServlet {
                 nuxeoController.setForcePublicationInfosScope("superuser_context");
                 
                 
-            }   else    {
+            }   else   if( request.getParameter("id") != null)  {
+                // Url from ws /Drive.webUrl
+                binaryType = Type.FILE;
+                fieldName = "file:content";
+                path = cmsService.getPathFromUniversalID(cmsContext, new UniversalID("nx",request.getParameter("id")));
+            }          
+            else {
                 // Document path
                  path = request.getParameter("path");
                  path = URLDecoder.decode(path, "UTF-8");
@@ -247,8 +255,11 @@ public class BinaryServlet extends HttpServlet {
             if (webToken != null) {
             	
             	ITokenService tokenService = Locator.findMBean(ITokenService.class, ITokenService.MBEAN_NAME);
-                String uid = tokenService.validateToken(webToken).get("uid");
-                request.setAttribute("osivia.delegation.userName", uid);
+            	Map<String,String> tokenDatas = tokenService.validateToken(webToken);
+            	if( tokenDatas != null)    {
+                    String uid = tokenDatas.get("uid");
+                    request.setAttribute("osivia.delegation.userName", uid);
+            	}
             }
 
 

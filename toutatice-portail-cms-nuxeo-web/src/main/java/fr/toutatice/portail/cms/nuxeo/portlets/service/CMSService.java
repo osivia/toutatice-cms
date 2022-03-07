@@ -81,6 +81,7 @@ import org.osivia.portal.api.page.PageParametersEncoder;
 import org.osivia.portal.api.panels.PanelPlayer;
 import org.osivia.portal.api.player.Player;
 import org.osivia.portal.api.portalobject.bridge.PortalObjectUtils;
+import org.osivia.portal.api.statistics.IStatisticsService;
 import org.osivia.portal.api.statistics.SpaceStatistics;
 import org.osivia.portal.api.taskbar.*;
 import org.osivia.portal.api.tasks.TaskModule;
@@ -174,6 +175,7 @@ public class CMSService implements ICMSService {
     private ICacheService serviceCache;
     private DefaultCMSCustomizer customizer;
     private IPortalUrlFactory urlFactory;
+    private IStatisticsService statisticService;
 
 
     /**
@@ -186,6 +188,7 @@ public class CMSService implements ICMSService {
         this.portletCtx = portletCtx;
 
         this.taskbarService = Locator.findMBean(ITaskbarService.class, ITaskbarService.MBEAN_NAME);
+        this.statisticService = Locator.findMBean(IStatisticsService.class, IStatisticsService.MBEAN_NAME);
 
 //TODO refonte
 //        this.formsService = NuxeoServiceFactory.getFormsService();
@@ -1003,6 +1006,9 @@ public class CMSService implements ICMSService {
             } else {
                 player = this.customizer.getCMSDefaultPlayer(cmsContext);
             }
+            
+            PortalControllerContext portalControllerContext = cmsContext.getPortalControllerContext();
+            statisticService.incrementsUserStatistics(portalControllerContext, ((Document) cmsContext.getDoc()).getPath());
         } catch (NuxeoException e) {
             player = null;
             e.rethrowCMSException();
