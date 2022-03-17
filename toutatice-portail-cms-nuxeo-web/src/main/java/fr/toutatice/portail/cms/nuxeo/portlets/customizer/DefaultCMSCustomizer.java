@@ -849,13 +849,16 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         if (!"detailedView".equals(displayContext)) {
             // Le download sur les fichiers doit être explicite (plus dans l'esprit GED)
-            if ("File".equals(document.getType()) || "Audio".equals(document.getType()) || "Video".equals(document.getType())) {
+        	
+        	// LB : désactivation de cette clause qui bloque tout les sous-types de fichier File non déclarés explicitement ici.
+
+            //if ("File".equals(document.getType()) || "Audio".equals(document.getType()) || "Video".equals(document.getType())) {
                 // Check context
-                if ("download".equals(displayContext) || "downloadVersion".equals(displayContext)) {
-                    url = createFileDownloadLink(cmsContext, document, displayContext);
-                    downloadable = url != null;
-                }
+            if ("download".equals(displayContext) || "downloadVersion".equals(displayContext)) {
+                url = createFileDownloadLink(cmsContext, document, displayContext);
+                downloadable = url != null;
             }
+            //}
 
             if ("ContextualLink".equals(document.getType()) && !("document".equals(displayContext) || "fileExplorer".equals(displayContext))) {
                 url = this.createPortletDelegatedExternalLink(cmsContext);

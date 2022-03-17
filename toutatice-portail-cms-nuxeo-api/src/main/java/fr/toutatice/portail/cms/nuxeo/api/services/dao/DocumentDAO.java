@@ -239,7 +239,11 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
                 boolean isPluginRegistered = this.nuxeoService.getCMSCustomizer().getCustomizationService()
                         .isPluginRegistered(OnlyofficeLiveEditHelper.ONLYOFFICE_PLUGIN_NAME);
                 if (isPluginRegistered) {
-                    return OnlyofficeLiveEditHelper.isMimeTypeSupported(mimeType);
+                	
+                	if(document.getType().equals("DocxfFile") || document.getType().equals("OformFile")) {
+                		return true;
+                	}
+                	else return OnlyofficeLiveEditHelper.isMimeTypeSupported(mimeType);
                 }
             }
         }
@@ -309,7 +313,18 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
                     // MS Word
                     icon = "word";
                     flaticon = true;
-                } else if ("vnd.ms-excel".equals(subType) || "vnd.openxmlformats-officedocument.spreadsheetml.sheet".equals(subType)
+                }
+	            else if ("onlyoffice-docxf".equals(subType)) {
+	                // MS Word
+	                icon = "docxf";
+	                flaticon = true;
+	            } 
+	            else if ("onlyoffice-oform".equals(subType)) {
+	                // MS Word
+	                icon = "oform";
+	                flaticon = true;
+	            } 
+                else if ("vnd.ms-excel".equals(subType) || "vnd.openxmlformats-officedocument.spreadsheetml.sheet".equals(subType)
                         || "vnd.ms-excel.sheet.macroenabled.12".equals(subType)) {
                     // MS Excel
                     icon = "excel";

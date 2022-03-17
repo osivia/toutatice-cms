@@ -32,18 +32,18 @@ public class OnlyofficeLiveEditHelper {
 
     public static OnlyofficeFileType getFileType(String mimeType) {
         if (documentMimetype.contains(mimeType)) {
-            return OnlyofficeFileType.Text;
+            return OnlyofficeFileType.word;
         }
 
         if (spreadsheetMimetype.contains(mimeType)) {
-            return OnlyofficeFileType.Spreadsheet;
+            return OnlyofficeFileType.cell;
         }
 
         if (presentationMimetype.contains(mimeType)) {
-            return OnlyofficeFileType.Presentation;
+            return OnlyofficeFileType.slide;
         }
         
-        return OnlyofficeFileType.Text;
+        return OnlyofficeFileType.word;
     }
 
     public static boolean isMimeTypeSupported(String mimeType) {
@@ -64,7 +64,7 @@ public class OnlyofficeLiveEditHelper {
     private static List<String> documentMimetype = Arrays.asList("text/rtf", "application/rtf", "application/msword",
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/vnd.sun.xml.writer",
             "application/vnd.sun.xml.writer.template", "application/vnd.oasis.opendocument.text", "application/vnd.oasis.opendocument.text-template",
-            "application/wordperfect");
+            "application/wordperfect", "application/pdf");
 
     private static List<String> spreadsheetMimetype = Arrays.asList("text/csv", "text/tsv", "application/vnd.ms-excel",
             "application/vnd.ms-excel.sheet.macroEnabled.12", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -77,6 +77,6 @@ public class OnlyofficeLiveEditHelper {
             "application/vnd.oasis.opendocument.presentation-template");
 
     public enum OnlyofficeFileType {
-        Text, Spreadsheet, Presentation
+        word, cell, slide
     }
 }
