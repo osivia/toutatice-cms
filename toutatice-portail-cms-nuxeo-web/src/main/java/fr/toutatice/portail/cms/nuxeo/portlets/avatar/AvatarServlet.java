@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.model.Document;
@@ -42,6 +43,8 @@ import org.osivia.portal.core.cms.CMSBinaryContent;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.AvatarInfo;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.AvatarUtils;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.DocumentFetchLiveCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.FileContentCommand;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.GetUserProfileCommand;
@@ -121,36 +124,33 @@ public class AvatarServlet extends HttpServlet {
 
 
             if (userId != null) {
-                Document userProfile = (Document) ctx.executeNuxeoCommand(new GetUserProfileCommand(userId));
+                
+                AvatarInfo avatar = AvatarUtils.getAvatar( userId);
 
-                if (userProfile != null) {
-                    Document fetchedUserProfile = (Document) ctx.executeNuxeoCommand(new DocumentFetchLiveCommand(userProfile.getPath(), "Read"));
+                if ( avatar != null && avatar.getBinaryContent() != null) {
+ 
+                    CMSBinaryContent content = avatar.getBinaryContent();
 
-                    if (fetchedUserProfile.getProperties().get("userprofile:avatar") != null) {
-                        FileContentCommand command = new FileContentCommand(fetchedUserProfile, "userprofile:avatar");
-                        command.setTimestamp(theRequest.getParameter("t"));
+                    // Les headers doivent être positionnées avant la réponse
+                    theResponse.setContentType(content.getMimeType());
 
-                        CMSBinaryContent content = (CMSBinaryContent) ctx.executeNuxeoCommand(command);
+                    ResourceUtil.copy(new FileInputStream(content.getFile()), theResponse.getOutputStream(), 4096);
 
-                        // Les headers doivent être positionnées avant la réponse
-                        theResponse.setContentType(content.getMimeType());
-
-                        ResourceUtil.copy(new FileInputStream(content.getFile()), theResponse.getOutputStream(), 4096);
-
-                        genericAvatar = false;
-                    }
+                    genericAvatar = false;
                 }
             }
+            
+
 
 
             if (genericAvatar) {
-                // no avatar found, use the guest avatar
-                File file = new File(portletCtx.getRealPath("/img/guest.png"));
+            	
+            	File file = new File(portletCtx.getRealPath("/img/guest.png"));
+                theResponse.setContentType("image/png");
+
 
                 byte[] data = FileUtils.readFileToByteArray(file);
 
-                // Mime type
-                theResponse.setContentType("image/png");
 
                 // Length
                 int length = Long.valueOf(file.length()).intValue();
