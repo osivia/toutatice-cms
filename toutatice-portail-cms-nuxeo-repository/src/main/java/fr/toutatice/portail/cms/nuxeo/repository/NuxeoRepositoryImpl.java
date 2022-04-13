@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cms.UniversalID;
 import org.osivia.portal.api.cms.exception.CMSException;
+import org.osivia.portal.api.cms.exception.DocumentNotFoundException;
 import org.osivia.portal.api.cms.model.Document;
 import org.osivia.portal.api.cms.model.NavigationItem;
 import org.osivia.portal.api.cms.repository.BaseUserRepository;
@@ -123,49 +124,49 @@ public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepo
     public String getInternalId(String path) throws CMSException {
 
 
-        CMSPublicationInfos res = (CMSPublicationInfos) ((NuxeoResult) ((NuxeoUserStorage) super.getUserStorage()).executeCommand(createCommandContext(),
-                new PublishInfosCommand(path))).getResult();
+        CMSPublicationInfos res = (CMSPublicationInfos) ((NuxeoResult) ((NuxeoUserStorage) super.getUserStorage()).executeCommand(createCommandContext(), new PublishInfosCommand(path))).getResult();
+
+
+        List<Integer> errors = res.getErrorCodes();
+        if (errors != null) {
+            if (errors.contains(CMSPublicationInfos.ERROR_CONTENT_NOT_FOUND)) {
+                throw new DocumentNotFoundException();
+            }
+        }
 
         org.nuxeo.ecm.automation.client.model.Document nxDocument;
 
         if (!res.isPublished())
-
-            nxDocument = (org.nuxeo.ecm.automation.client.model.Document) ((NuxeoUserStorage) super.getUserStorage())
-                    .executeCommand(createCommandContext(), new DocumentFetchLiveCommand(res.getDocumentPath(), "Read")).getResult();
-        else    {
-            nxDocument = (org.nuxeo.ecm.automation.client.model.Document) ((NuxeoUserStorage) super.getUserStorage())
-                    .executeCommand(createCommandContext(), new DocumentFetchPublishedCommand(res.getDocumentPath())).getResult();
+            nxDocument = (org.nuxeo.ecm.automation.client.model.Document) ((NuxeoUserStorage) super.getUserStorage()).executeCommand(createCommandContext(), new DocumentFetchLiveCommand(res.getDocumentPath(), "Read")).getResult();
+        else {
+            nxDocument = (org.nuxeo.ecm.automation.client.model.Document) ((NuxeoUserStorage) super.getUserStorage()).executeCommand(createCommandContext(), new DocumentFetchPublishedCommand(res.getDocumentPath())).getResult();
             
-            // Cannot publish /default-domain/communaute
-            if( path.startsWith("/default-domain/communaute/"))  {
-                if( ! nxDocument.getFacets().list().contains("isRemoteProxy"))  {
-                    
-                    // TODO : dans le cas d'une publication 'isRemoteProxy' n'est pas mise à jour
-                    // Apparemment, il est uniquement mis à jour sur ToutaticeCoreProxyWithWorkflowFactory (publication par workflow)
-                    
+            // Ensure facet is set on remote paroxy
+             if (!nxDocument.getFacets().list().contains("isRemoteProxy")) {
+                if (!nxDocument.getPath().endsWith(".proxy")) {
                     // Add facet
-                    ((NuxeoUserStorage) super.getUserStorage()).executeCommand(createCommandContext(), new AddRemoteProxyFacetCommand(path))
-                            .getResult();       
+                    ((NuxeoUserStorage) super.getUserStorage()).executeCommand(createCommandContext(), new AddRemoteProxyFacetCommand(path)).getResult();
                     // reload
-                    nxDocument = (org.nuxeo.ecm.automation.client.model.Document) ((NuxeoUserStorage) super.getUserStorage())
-                            .executeCommand(createCommandContext( false), new DocumentFetchPublishedCommand(res.getDocumentPath())).getResult();
+                    NuxeoCommandContext ctx = createCommandContext(false);
+                    //to prevent  to take the already fetch in same request
+                    ctx.setForceReload(true);
+                    nxDocument = (org.nuxeo.ecm.automation.client.model.Document) ((NuxeoUserStorage) super.getUserStorage()).executeCommand(ctx, new DocumentFetchPublishedCommand(res.getDocumentPath())).getResult();
                 }
             }
         }
-        
         
 
 
         String internalId = (String) nxDocument.getString("ttc:webid");
 
 
-        if (nxDocument.getFacets().list().contains("isRemoteProxy")) {
-            // Get parent
-            org.nuxeo.ecm.automation.client.model.Document parent = (org.nuxeo.ecm.automation.client.model.Document) ((NuxeoUserStorage) super.getUserStorage())
+        if (res.isPublished()) {
+            if (nxDocument.getFacets().list().contains("isRemoteProxy")) {
+                // Get parent
+                org.nuxeo.ecm.automation.client.model.Document parent = (org.nuxeo.ecm.automation.client.model.Document) ((NuxeoUserStorage) super.getUserStorage())
                     .executeCommand(createCommandContext(), new GetParentCommand(nxDocument)).getResult();
-
-
-            internalId = internalId + RPXY_WID_MARKER + (String) parent.getString("ttc:webid");
+                internalId = internalId + RPXY_WID_MARKER + (String) parent.getString("ttc:webid");
+            }
         }
 
 
@@ -175,53 +176,10 @@ public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepo
     @Override
     public String getPath(String internalId) throws CMSException {
 
-
-
-//        if( internalId.contains("kFG8vy"))
-//            System.out.println("*** GETPATH " );
-
         
         CMSPublicationInfos res = (CMSPublicationInfos) ((NuxeoResult) ((NuxeoUserStorage) super.getUserStorage()).executeCommand(createCommandContext(),
                 new PublishInfosCommand(IWebIdService.FETCH_PATH_PREFIX + internalId))).getResult();
         
-//        if( internalId.contains("kFG8vy"))
-//            System.out.println("*** GETPATH " + internalId +"->" + res.getDocumentPath());
-
-        List<Integer> errors = res.getErrorCodes();
-        if (errors != null) {
-            if (errors.contains(CMSPublicationInfos.ERROR_CONTENT_NOT_FOUND)) {
-                if (internalId.contains(RPXY_WID_MARKER)) {
-                    // TODO : dans le cas d'un remote proxy coté Nuxeo le fetch combiné [WEB_ID_DOC]_c_[WEB_ID_SECTION]ne donne rien
-                    // coté nuxeo le : le ecm:mixinType = 'isRemoteProxy' du CMSPublicationInfos ne renvoie rien
-                    // Apparemment, il est uniquement mis à jour sur ToutaticeCoreProxyWithWorkflowFactory (publication par workflow)
-
-
-                    String[] webIds = StringUtils.splitByWholeSeparator(internalId, RPXY_WID_MARKER);
-                    // Remote proxy webid is same as live
-                    String liveWId = webIds[0];
-                    // Webid of section where live is published (section is parent of remote proxy)
-                    String sectionWId = webIds[1];
-
-                    try {
-                        // Get proxy
-                        org.nuxeo.ecm.automation.client.model.Document proxy = (org.nuxeo.ecm.automation.client.model.Document) ((NuxeoUserStorage) super.getUserStorage())
-                                .executeCommand(createCommandContext(), new FetchByWebIdCommand(liveWId)).getResult();
-
-
-                        // Add facet
-                        ((NuxeoUserStorage) super.getUserStorage()).executeCommand(createCommandContext(), new AddRemoteProxyFacetCommand(proxy.getPath()))
-                                .getResult();
-
-                        // Refetch
-                        res = (CMSPublicationInfos) ((NuxeoResult) ((NuxeoUserStorage) super.getUserStorage()).executeCommand(createCommandContext(false),
-                                new PublishInfosCommand(IWebIdService.FETCH_PATH_PREFIX + internalId))).getResult();
-                    } catch (Exception e) {
-                        // DO NOTHING
-                    }
-
-                }
-            }
-        }
 
 
         return res.getDocumentPath();
@@ -247,13 +205,6 @@ public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepo
     @Override
     public NavigationItem getNavigationItem(String internalId) throws CMSException {
         
-        // Get result by cache pattern
-        // TODO : update if the document is modified
-
-//        if( internalId.equals("kFG8vy"))    {
-//            if( PageProperties.getProperties().isCheckingSpaceContents())
-//                System.out.println("**************************************************************");
-//        }
 
         
         Document doc = getDocument(internalId);
@@ -261,10 +212,7 @@ public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepo
         String spacePath = getPath(doc.getSpaceId().getInternalID());
         String docPath = getPath(internalId);
 
-//        if( internalId.equals("kFG8vy"))    {
-//
-//            System.out.println("**** GETNAV CHK="+ PageProperties.getProperties().isCheckingSpaceContents() + " DOCPATH="+ docPath);
-//        }
+
         
         CMSServiceCtx cmsContext = getNavigationCMSContext();
 

@@ -17,6 +17,7 @@
 package fr.toutatice.portail.cms.nuxeo.services;
 
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -207,8 +208,8 @@ public class NuxeoCommandService implements INuxeoCommandService {
 
 
 
-		HttpServletRequest portalRequest = (HttpServletRequest) ctx.getRequest();
 
+		 Map<String, Object> requestCache = PageProperties.getProperties().getPageRequestCache();
 
 
 		// v2.0.8 : ajout d'une request key pour distinguer les types
@@ -228,23 +229,24 @@ public class NuxeoCommandService implements INuxeoCommandService {
 		// Meme si présent dans la requete
 		if (!ctx.isForceReload())	{
 
-			if (portalRequest != null) {
-				Object value = portalRequest.getAttribute(requestKey);
+
+			if (requestCache != null) {
+				Object value = requestCache.get(requestKey);
 				if (value != null)  {
 				    // Has been reloaded since PageResfresh
 
 				    if(  PageProperties.getProperties().isRefreshingPage() )  {
-		                if( portalRequest.getAttribute(requestKey + ".resfreshed") == null) {
-		                    portalRequest.setAttribute(requestKey + ".resfreshed", "1");
+		                if( requestCache.get(requestKey + ".resfreshed") == null) {
+		                    requestCache.put(requestKey + ".resfreshed", "1");
                             value = null;
                         }
 		            }
 				    
 				 // Has been reloaded since Space refreshed
                     if(  PageProperties.getProperties().isCheckingSpaceContents())  {
-                        Long tsRefresh = (Long) portalRequest.getAttribute(requestKey + ".spaceRefreshed") ;
+                        Long tsRefresh = (Long) requestCache.get(requestKey + ".spaceRefreshed") ;
                         if( tsRefresh == null || tsRefresh < PageProperties.getProperties().getCheckingSpaceBeginning())    {
-                            portalRequest.setAttribute(requestKey + ".spaceRefreshed", System.currentTimeMillis());
+                            requestCache.put(requestKey + ".spaceRefreshed", System.currentTimeMillis());
                             value = null;
                         }
 
@@ -328,7 +330,7 @@ public class NuxeoCommandService implements INuxeoCommandService {
 		Object response =  this.getServiceCache(ctx).getCache(cacheInfos);
 
 
-		if(portalRequest != null) {
+		if(requestCache != null) {
 
             // prise en compte des éléments de navigation
             boolean navigationItems = false;
@@ -346,7 +348,7 @@ public class NuxeoCommandService implements INuxeoCommandService {
             //  dans une requete, on ne stocke que les éléments Document et CMSPublicationInfos
             // pour éviter les classcast exception  entre 2 webapps
             if( (response instanceof Document) || (response instanceof CMSPublicationInfos) || navigationItems) {
-                portalRequest.setAttribute(requestKey, response);
+                requestCache.put(requestKey, response);
             }
         }
         return response;
@@ -418,7 +420,7 @@ public class NuxeoCommandService implements INuxeoCommandService {
 
 			Throwable cause = e.getCause();
 
-			if( (cause instanceof HttpHostConnectException) || (cause instanceof SocketTimeoutException)) {
+			if( (cause instanceof HttpHostConnectException) || (cause instanceof SocketTimeoutException) || (cause instanceof UnknownHostException)) {
                 this.getServiceStatut(ctx).notifyError(NuxeoSatelliteConnectionProperties.getConnectionProperties(ctx.getSatellite()).getPrivateBaseUri().toString(),
 						new UnavailableServer(e.getMessage()));
             }
