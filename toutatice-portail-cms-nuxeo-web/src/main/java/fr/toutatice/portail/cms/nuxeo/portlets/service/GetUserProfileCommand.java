@@ -17,6 +17,7 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
 
+import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
 
@@ -43,6 +44,7 @@ public class GetUserProfileCommand  implements INuxeoCommand{
         if (username != null) {
             newRequest.set("username", username);
         }
+        newRequest.setHeader(Constants.HEADER_NX_SCHEMAS, "*");        
         return newRequest.execute();
 		
 	}
