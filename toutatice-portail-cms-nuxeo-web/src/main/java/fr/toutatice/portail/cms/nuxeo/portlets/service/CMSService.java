@@ -2590,7 +2590,11 @@ public class CMSService implements ICMSService {
                     } else if (TaskbarItemRestriction.MANAGEMENT.equals(restriction)) {
                         // Check if manageable by user
                         granted = publicationInfos.isManageableByUser();
-                    } else {
+                    } else if (TaskbarItemRestriction.LOGGED_USER.equals(restriction)) {
+                        // Check if current user is not null (logged)
+                    	granted = cmsContext.getControllerContext().getUser() != null;
+                    }
+                    else {
                         // Unknown case, deny access
                         granted = false;
                     }
