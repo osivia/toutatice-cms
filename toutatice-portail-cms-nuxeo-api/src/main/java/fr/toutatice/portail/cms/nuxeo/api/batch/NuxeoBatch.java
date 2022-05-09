@@ -79,6 +79,9 @@ public abstract class NuxeoBatch extends AbstractBatch {
 		
 		Document task = getTask(uuid);
 		
+		if(task == null) {
+			throw new CMSException(CMSException.ERROR_NOTFOUND);
+		}
 		return formsService.proceed(portalControllerContext, task, action, variables);
 		
 	}
