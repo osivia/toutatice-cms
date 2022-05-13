@@ -59,12 +59,11 @@
     <!-- Buttons -->
     <div class="row">
         <div class="col-sm-offset-3 col-sm-9">
-            <button type="submit" class="btn btn-primary no-ajax-link">
+            <button type="submit" class="btn btn-primary">
                 <i class="halflings halflings-floppy-disk"></i>
                 <span><op:translate key="SAVE" /></span>
             </button>
             
-            <button type="button" class="btn btn-secondary" onclick="closeFancybox()"><op:translate key="CANCEL" /></button>
         </div>
     </div>
 </form>
