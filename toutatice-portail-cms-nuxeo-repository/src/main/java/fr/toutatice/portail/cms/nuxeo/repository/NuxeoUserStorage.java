@@ -267,5 +267,10 @@ public class NuxeoUserStorage extends BaseUserStorage {
     public void beginBatch() {
     }
 
+    @Override
+    public void deleteDocument(String internalID, boolean batchMode) throws CMSException {
+       
+    }
+
 
 }

@@ -302,7 +302,6 @@ return nuxeoRequest.toString();
     <div class="row">
         <div class="col-sm-offset-4 col-sm-8">
             <button type="submit" class="btn btn-primary navbar-btn">
-                <i class="halflings halflings-floppy-disk"></i>
                 <span><op:translate key="SAVE" /></span>
             </button>
             
