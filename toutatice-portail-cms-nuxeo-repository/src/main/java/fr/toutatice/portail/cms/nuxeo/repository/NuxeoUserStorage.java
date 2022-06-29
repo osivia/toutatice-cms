@@ -145,7 +145,7 @@ public class NuxeoUserStorage extends BaseUserStorage {
                 if( "Workspace".equals(nxDocument.getType()) )
                     properties.put("osivia.connect.templated", "false");
                 document= new RepositorySpace(getUserRepository(), nxDocument, internalID,
-                        nxDocument.getPath().substring(nxDocument.getPath().lastIndexOf('/') + 1), null, spaceId, null, properties, new UniversalID("templates", "ID_TEMPLATE_NX_WORKSPACE"));      
+                        nxDocument.getPath().substring(nxDocument.getPath().lastIndexOf('/') + 1), null, spaceId, null, properties, null);      
             }
             else
                 document= new RepositoryDocument(getUserRepository(), nxDocument, internalID,

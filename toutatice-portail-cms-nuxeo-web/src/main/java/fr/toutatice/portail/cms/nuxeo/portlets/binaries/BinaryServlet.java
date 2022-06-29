@@ -172,6 +172,7 @@ public class BinaryServlet extends HttpServlet {
             
             // Force download
             boolean forceDownload = false;
+            boolean sharedDocument = false;
             long    expirationTimeout =  TimeUnit.MINUTES.toMillis(10);
        
              
@@ -183,9 +184,18 @@ public class BinaryServlet extends HttpServlet {
             }
             
             
+            if(  "true".equals(request.getParameter("d")))  {
+                forceDownload = true;
+            }
+            
             // Shared link
             int linkIndex = request.getRequestURI().indexOf(LINK_PATH);
             if (linkIndex != -1) {
+                
+                sharedDocument = true;
+
+                
+                
                 String shareId = request.getRequestURI().substring(linkIndex + LINK_PATH.length());
 
                 
@@ -198,7 +208,6 @@ public class BinaryServlet extends HttpServlet {
                 
                 DocumentDTO dto = DocumentDAO.getInstance().toDTO(doc);
                  
-                forceDownload = true;
                 String format = doc.getString("rshr:format");
                 if ("native".equals(format)) {
                     fieldName = "file:content";
@@ -301,7 +310,7 @@ public class BinaryServlet extends HttpServlet {
                 
                 long begin = System.currentTimeMillis();
                 
-                this.stream(request, response, content, output, forceDownload);
+                this.stream(request, response, content, output, sharedDocument, forceDownload);
                 
                 long end = System.currentTimeMillis();
                 
@@ -318,7 +327,8 @@ public class BinaryServlet extends HttpServlet {
                 long expires = lastModified + expirationTimeout;
 
                 response.setContentType(content.getMimeType());
-                response.setHeader("Content-Disposition", this.getHeaderContentDisposition(request, content, forceDownload));
+                response.setHeader("Content-Disposition", this.getHeaderContentDisposition(request, content, sharedDocument,forceDownload));
+                addCrossOrigin( response);
                 response.setHeader("Cache-Control", "max-age=" + expirationTimeout);
                 response.setHeader("Content-Length", String.valueOf(content.getFileSize()));
 
@@ -363,6 +373,18 @@ public class BinaryServlet extends HttpServlet {
         BinaryServlet.portletContext = portletContext;
     }
 
+    
+    /**
+     * Adds the cross origin header.
+     *
+     * @param response the response
+     */
+    private void addCrossOrigin(HttpServletResponse response) {
+        String crossOrigin = System.getProperty("portal.cms.binaries.Access-Control-Allow-Origin");
+        if( StringUtils.isNotEmpty(crossOrigin)) {
+            response.setHeader("Access-Control-Allow-Origin", crossOrigin);
+        }
+    }
 
     /**
      * Get header content disposition value.
@@ -372,26 +394,34 @@ public class BinaryServlet extends HttpServlet {
      * @param forceDownload force the download 
      * @return content disposition
      */
-    private String getHeaderContentDisposition(HttpServletRequest request, CMSBinaryContent content, boolean forceDownload) {
+    private String getHeaderContentDisposition(HttpServletRequest request, CMSBinaryContent content, boolean sharedDocument, boolean forceDownload) {
         String fileName = request.getParameter("fileName");
         if (fileName == null) {
             fileName = content.getName();
         }
 
         StringBuilder builder = new StringBuilder();
-        if ("application/pdf".equals(content.getMimeType()) || StringUtils.startsWith(content.getMimeType(),"image/")) {
-            
-            if( forceDownload) {
+
+        if (sharedDocument == false) {
+            if ("application/pdf".equals(content.getMimeType()) || StringUtils.startsWith(content.getMimeType(), "image/")) {
+                // Open inside navigator
+                builder.append("inline; ");
+
+            } else {
                 // Force download
                 builder.append("attachment; ");
-            }   else    {
-            // Open inside navigator
-            builder.append("inline; ");
             }
         } else {
-            // Force download
-            builder.append("attachment; ");
+            if (forceDownload) {
+                // Force download
+                builder.append("attachment; ");
+            } else {
+                // Open inside navigator
+                builder.append("inline; ");
+            }
         }
+
+
         builder.append("filename=\"");
         builder.append(fileName);
         builder.append("\"");
@@ -399,7 +429,7 @@ public class BinaryServlet extends HttpServlet {
     }
 
 
-    private void stream(HttpServletRequest request, HttpServletResponse response, CMSBinaryContent content, OutputStream output, boolean forceDownload) throws IOException {
+    private void stream(HttpServletRequest request, HttpServletResponse response, CMSBinaryContent content, OutputStream output, boolean sharedDocument, boolean forceDownload) throws IOException {
         // Length
         long length = content.getFileSize();
         // Last modified
@@ -412,7 +442,8 @@ public class BinaryServlet extends HttpServlet {
             contentType = "application/octet-stream";
         }
         // Content disposition
-        String disposition = this.getHeaderContentDisposition(request, content, forceDownload);
+        String disposition = this.getHeaderContentDisposition(request, content, sharedDocument, forceDownload);
+        addCrossOrigin( response);
 
 
         // Validate request headers for resume : If-Unmodified-Since header should be greater than LastModified.

@@ -332,4 +332,9 @@ public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepo
         return navChildren;
     }
 
+    @Override
+    public void publish(String id) throws CMSException {
+
+    }
+
 }
