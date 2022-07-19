@@ -1,35 +1,38 @@
 /*
- * (C) Copyright 2006-2010 Nuxeo SAS (http://nuxeo.com/) and contributors.
+ * (C) Copyright 2006-2010 Nuxeo SA (http://nuxeo.com/) and others.
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Lesser General Public License
- * (LGPL) version 2.1 which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/lgpl.html
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
  * Contributors:
  *     bstefanescu
  */
 package org.nuxeo.ecm.automation.client.jaxrs.util;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.JsonToken;
 import org.nuxeo.ecm.automation.client.model.OperationDocumentation;
 import org.nuxeo.ecm.automation.client.model.OperationDocumentation.Param;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+
 /**
  * @author <a href="mailto:bs@nuxeo.com">Bogdan Stefanescu</a>
- *
  */
 public class JsonOperationMarshaller {
 
-    public static OperationDocumentation read(JsonParser jp) throws Exception {
+    public static OperationDocumentation read(JsonParser jp) throws IOException {
         OperationDocumentation op = new OperationDocumentation();
         JsonToken tok = jp.nextToken(); // skip {
         while (tok != null && tok != JsonToken.END_OBJECT) {
@@ -37,6 +40,8 @@ public class JsonOperationMarshaller {
             jp.nextToken();
             if ("id".equals(key)) {
                 op.id = jp.getText();
+            } else if ("aliases".equals(key)) {
+                op.aliases = readStringArray(jp);
             } else if ("label".equals(key)) {
                 op.label = jp.getText();
             } else if ("category".equals(key)) {
@@ -59,13 +64,12 @@ public class JsonOperationMarshaller {
             tok = jp.nextToken();
         }
         if (tok == null) {
-            throw new IllegalArgumentException(
-                    "Unexpected end of stream.");
+            throw new IllegalArgumentException("Unexpected end of stream.");
         }
         return op;
     }
 
-    public static String[] readStringArray(JsonParser jp) throws Exception {
+    public static String[] readStringArray(JsonParser jp) throws IOException {
         JsonToken tok = jp.nextToken(); // skip [
         if (tok == JsonToken.END_ARRAY) {
             return null;
@@ -78,18 +82,18 @@ public class JsonOperationMarshaller {
         return list.toArray(new String[list.size()]);
     }
 
-    private static void readParams(JsonParser jp, OperationDocumentation op) throws Exception {
-        JsonToken tok = jp.nextToken();  // skip [
+    private static void readParams(JsonParser jp, OperationDocumentation op) throws IOException {
+        JsonToken tok = jp.nextToken(); // skip [
         if (tok == JsonToken.END_ARRAY) {
             return;
         }
         do {
             readParam(jp, op);
             tok = jp.nextToken();
-        } while(tok != JsonToken.END_ARRAY);
+        } while (tok != JsonToken.END_ARRAY);
     }
 
-    private static void readParam(JsonParser jp, OperationDocumentation op) throws Exception {
+    private static void readParam(JsonParser jp, OperationDocumentation op) throws IOException {
         Param para = new Param();
         JsonToken tok = jp.nextToken(); // skip {
         while (tok != null && tok != JsonToken.END_OBJECT) {
@@ -99,6 +103,8 @@ public class JsonOperationMarshaller {
                 para.name = jp.getText();
             } else if ("type".equals(key)) {
                 para.type = jp.getText();
+            } else if ("description".equals(key)) {
+                para.description = jp.getText();
             } else if ("required".equals(key)) {
                 para.isRequired = jp.getBooleanValue();
             } else if ("widget".equals(key)) {
@@ -111,7 +117,7 @@ public class JsonOperationMarshaller {
         op.params.add(para);
     }
 
-    public static void write(JsonParser jp, OperationDocumentation op) throws Exception {
+    public static void write(JsonParser jp, OperationDocumentation op) {
 
     }
 

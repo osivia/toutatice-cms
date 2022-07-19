@@ -1,10 +1,17 @@
 /*
- * Copyright (c) 2006-2011 Nuxeo SA (http://nuxeo.com/) and others.
+ * (C) Copyright 2006-2016 Nuxeo SA (http://nuxeo.com/) and others.
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
  * Contributors:
  *     matic
@@ -13,66 +20,89 @@ package org.nuxeo.ecm.automation.client.model;
 
 import java.util.List;
 
-
-
 /**
  * @author matic
- *
  */
 public class PaginableDocuments extends Documents {
 
     private static final long serialVersionUID = 1L;
 
-    protected int totalSize;
     protected int pageSize;
-    protected int pageCount;
-    protected int pageIndex;
+
+    protected int currentPageIndex;
+
+    protected int numberOfPages;
+
+    protected int resultsCount;
+
+    protected boolean hasAggregates;
 
     public PaginableDocuments() {
     }
 
-    /**
-     * @param size
-     */
-    public PaginableDocuments(List<Document> docs, int totalSize, int pageSize, int pageCount, int pageIndex) {
-        super (docs);
-        this.totalSize = totalSize;
+    public PaginableDocuments(List<Document> docs, int resultsCount, int pageSize, int numberOfPages,
+                              int currentPageIndex) {
+        super(docs);
+        this.resultsCount = resultsCount;
         this.pageSize = pageSize;
-        this.pageCount = pageCount;
-        this.pageIndex = pageIndex;
-    }
-
-    public int getTotalSize() {
-        return totalSize;
+        this.numberOfPages = numberOfPages;
+        this.currentPageIndex = currentPageIndex;
     }
 
     public int getPageSize() {
         return pageSize;
     }
 
-
-    public int getPageCount() {
-        return pageCount;
-    }
-
-    public int getPageIndex() {
-        return pageIndex;
-    }
-
-    public void setTotalSize(int totalSize) {
-        this.totalSize = totalSize;
-    }
-
-    public void setPageCount(int pageCount) {
-        this.pageCount = pageCount;
-    }
-
-    public void setPageIndex(int pageIndex) {
-        this.pageIndex = pageIndex;
-    }
-
     public void setPageSize(int pageSize) {
         this.pageSize = pageSize;
+    }
+
+    public int getCurrentPageIndex() {
+        return currentPageIndex;
+    }
+
+    public void setCurrentPageIndex(int currentPageIndex) {
+        this.currentPageIndex = currentPageIndex;
+    }
+
+    public int getNumberOfPages() {
+        return numberOfPages;
+    }
+
+    public void setNumberOfPages(int numberOfPages) {
+        this.numberOfPages = numberOfPages;
+    }
+
+    public int getResultsCount() {
+        return resultsCount;
+    }
+
+    public void setResultsCount(int resultsCount) {
+        this.resultsCount = resultsCount;
+    }
+
+    public boolean hasAggregates() {
+        return hasAggregates;
+    }
+
+    public void setHasAggregates(boolean hasAggregates) {
+        this.hasAggregates = hasAggregates;
+    }
+
+
+    @Deprecated
+    public int getPageIndex() {
+        return this.currentPageIndex;
+    }
+
+    @Deprecated
+    public int getPageCount() {
+        return this.numberOfPages;
+    }
+
+    @Deprecated
+    public int getTotalSize() {
+        return this.resultsCount;
     }
 
 }

@@ -1,10 +1,17 @@
 /*
- * Copyright (c) 2006-2011 Nuxeo SA (http://nuxeo.com/) and others.
+ * (C) Copyright 2006-2011 Nuxeo SA (http://nuxeo.com/) and others.
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
  * Contributors:
  *     bstefanescu
@@ -15,6 +22,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,17 +36,78 @@ public abstract class AsyncAutomationClient extends AbstractAutomationClient {
 
     protected ExecutorService async;
 
-    public AsyncAutomationClient(String url) {
-        this(url, Executors.newCachedThreadPool(new ThreadFactory() {
+    /**
+     * Timeout in milliseconds for the wait of the asynchronous thread pool termination. Default value: 2 seconds.
+     */
+    protected long asyncAwaitTerminationTimeout = 2000;
+
+    protected static ExecutorService getExecutorService() {
+        return Executors.newCachedThreadPool(new ThreadFactory() {
+            @Override
             public Thread newThread(Runnable r) {
                 return new Thread("AutomationAsyncExecutor");
             }
-        }));
+        });
     }
 
+    /**
+     * Instantiates a new asynchronous automation client with the default timeout for the wait of the asynchronous
+     * thread pool termination: 2 seconds.
+     */
+    public AsyncAutomationClient(String url) {
+        this(url, getExecutorService());
+    }
+
+    /**
+     * Instantiates a new asynchronous automation client with the default timeout for the wait of the asynchronous
+     * thread pool termination: 2 seconds.
+     *
+     * @since 10.10
+     */
+    public AsyncAutomationClient(Supplier<String> urlSupplier) {
+        this(urlSupplier, getExecutorService());
+    }
+
+    /**
+     * Instantiates a new asynchronous automation client with the given asynchronous executor and the default timeout
+     * for the wait of the asynchronous thread pool termination: 2 seconds.
+     */
     public AsyncAutomationClient(String url, ExecutorService executor) {
         super(url);
         async = executor;
+    }
+
+    /**
+     * Instantiates a new asynchronous automation client with the given asynchronous executor and the default timeout
+     * for the wait of the asynchronous thread pool termination: 2 seconds.
+     *
+     * @since 10.10
+     */
+    public AsyncAutomationClient(Supplier<String> urlSupplier, ExecutorService executor) {
+        super(urlSupplier);
+        async = executor;
+    }
+
+    /**
+     * Instantiates a new asynchronous automation client with the given timeout in milliseconds for the wait of the
+     * asynchronous thread pool termination.
+     *
+     * @since 5.7
+     */
+    public AsyncAutomationClient(String url, long asyncAwaitTerminationTimeout) {
+        this(url);
+        this.asyncAwaitTerminationTimeout = asyncAwaitTerminationTimeout;
+    }
+
+    /**
+     * Instantiates a new asynchronous automation client with the given asynchronous executor and the given timeout in
+     * milliseconds for the wait of the asynchronous thread pool termination.
+     *
+     * @since 5.7
+     */
+    public AsyncAutomationClient(String url, ExecutorService executor, long asyncAwaitTerminationTimeout) {
+        this(url, executor);
+        this.asyncAwaitTerminationTimeout = asyncAwaitTerminationTimeout;
     }
 
     @Override
@@ -49,9 +118,10 @@ public abstract class AsyncAutomationClient extends AbstractAutomationClient {
     @Override
     public synchronized void shutdown() {
         try {
-            async.awaitTermination(2, TimeUnit.SECONDS);
+            async.awaitTermination(asyncAwaitTerminationTimeout, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
-            log.error(e, e);
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
         }
         super.shutdown();
         async = null;

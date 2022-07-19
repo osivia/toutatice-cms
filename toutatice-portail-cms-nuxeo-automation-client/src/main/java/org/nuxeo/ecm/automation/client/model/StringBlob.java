@@ -1,10 +1,17 @@
 /*
- * Copyright (c) 2006-2011 Nuxeo SA (http://nuxeo.com/) and others.
+ * (C) Copyright 2006-2011 Nuxeo SA (http://nuxeo.com/) and others.
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
  * Contributors:
  *     bstefanescu
@@ -29,15 +36,15 @@ public class StringBlob extends Blob {
 
     protected String charset;
 
-
     public StringBlob(String content) {
         this.content = content;
     }
 
-    /** Creates a <code>StringBlob</code> that is used in the Blob.Attach call
+    /**
+     * Creates a <code>StringBlob</code> that is used in the Blob.Attach call
      *
-     *  @param fileName Name that is used to save the file as
-     *  @param content Base64 encoded content
+     * @param fileName Name that is used to save the file as
+     * @param content Base64 encoded content
      */
     public StringBlob(String fileName, String content) {
         super(fileName, null);
@@ -50,7 +57,6 @@ public class StringBlob extends Blob {
      * @param fileName Name that is used to save the file as
      * @param content Base64 encoded content
      * @param mimeType Mime type to use for this content
-     *
      */
     public StringBlob(String fileName, String content, String mimeType) {
         super(fileName, mimeType);
@@ -58,8 +64,9 @@ public class StringBlob extends Blob {
     }
 
     /**
-     * Set the charset to be used when to transform the content into a byte stream.
-     * If npt specified the default charset will be used.
+     * Set the charset to be used when to transform the content into a byte stream. If npt specified the default charset
+     * will be used.
+     *
      * @param charset
      */
     public void setCharset(String charset) {

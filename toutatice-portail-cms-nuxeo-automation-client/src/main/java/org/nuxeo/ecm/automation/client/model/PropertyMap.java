@@ -1,10 +1,17 @@
 /*
- * Copyright (c) 2006-2011 Nuxeo SA (http://nuxeo.com/) and others.
+ * (C) Copyright 2006-2016 Nuxeo SA (http://nuxeo.com/) and others.
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
  * Contributors:
  *     bstefanescu
@@ -12,39 +19,37 @@
 package org.nuxeo.ecm.automation.client.model;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
 /**
- * A flat representation of a document properties. Dates are in
- * YYYY-MM-DDThh:mm:ssZ (UTC) format
+ * A flat representation of a document properties. Dates are in YYYY-MM-DDThh:mm:ssZ (UTC) format
  *
  * @author <a href="mailto:bs@nuxeo.com">Bogdan Stefanescu</a>
  */
 public class PropertyMap implements Serializable {
 
-
-
-	private static final long serialVersionUID = -3260084599278006841L;
+    private static final long serialVersionUID = -3260084599278006841L;
 
     protected final LinkedHashMap<String, Object> map;
 
     public PropertyMap() {
-        map = new LinkedHashMap<String, Object>();
+        map = new LinkedHashMap<>();
     }
 
     public PropertyMap(PropertyMap props) {
-        map = new LinkedHashMap<String, Object>(props.map);
+        map = new LinkedHashMap<>(props.map);
     }
 
     public PropertyMap(Map<String, Object> map) {
-        this.map = new LinkedHashMap<String, Object>(map);
+        this.map = new LinkedHashMap<>(map);
     }
 
     public PropertyMap(int size) {
-        map = new LinkedHashMap<String, Object>(size);
+        map = new LinkedHashMap<>(size);
     }
 
     public String getString(String key) {
@@ -77,18 +82,6 @@ public class PropertyMap implements Serializable {
 
     public String getString(String key, String defValue) {
         return PropertiesHelper.getString(map.get(key), defValue);
-    }
-
-    public Blob getBlob(String key) {
-        Object v = map.get(key);
-        if (v == null) {
-            return null;
-        }
-        if (v instanceof Blob) {
-            return (Blob) v;
-        }
-        throw new IllegalArgumentException("Property '" + key
-                + "' is not a blob");
     }
 
     public Boolean getBoolean(String key, Boolean defValue) {
@@ -131,57 +124,8 @@ public class PropertyMap implements Serializable {
         return map.isEmpty();
     }
 
-    public void set(String key, String value) {
-        if (value == null) {
-            map.remove(key);
-        }
-        map.put(key, value);
-    }
-
-    public void set(String key, Boolean value) {
-        if (value == null) {
-            map.remove(key);
-        }
-        map.put(key, value.toString());
-    }
-
-    public void set(String key, Long value) {
-        if (value == null) {
-            map.remove(key);
-        }
-        map.put(key, value.toString());
-    }
-
-    public void set(String key, Double value) {
-        if (value == null) {
-            map.remove(key);
-        }
-        map.put(key, value.toString());
-    }
-
-    public void set(String key, Date value) {
-        if (value == null) {
-            map.remove(key);
-        }
-        map.put(key, DateUtils.formatDate(value));
-    }
-
-    public void set(String key, PropertyList value) {
-        if (value == null) {
-            map.remove(key);
-        }
-        map.put(key, value);
-    }
-
-    public void set(String key, PropertyMap value) {
-        if (value == null) {
-            map.remove(key);
-        }
-        map.put(key, value);
-    }
-
     public Map<String, Object> map() {
-        return map;
+        return Collections.unmodifiableMap(map);
     }
 
     @Override
@@ -191,9 +135,8 @@ public class PropertyMap implements Serializable {
             Object v = entry.getValue();
             if (v != null) {
                 if (v.getClass() == String.class) {
-                    buf.append(entry.getKey()).append("=").append(
-                            entry.getValue()).append("\n"); // TODO escape \n
-                                                            // in value
+                    buf.append(entry.getKey()).append("=").append(entry.getValue()).append("\n"); // TODO escape \n
+                    // in value
                 } else {
                     // TODO - use full xpath
                     // buf.append(entry.getKey()).append("=").append(entry.getValue()).append("\n");
@@ -205,11 +148,16 @@ public class PropertyMap implements Serializable {
         }
         return buf.toString();
     }
-    
-    /**
-	 * @return the map
-	 */
-	public LinkedHashMap<String, Object> getMap() {
-		return map;
-	}
+
+
+    @Deprecated
+    public void set(String key, Object value) {
+        this.map.put(key, value);
+    }
+
+    @Deprecated
+    public Map<String, Object> getMap() {
+        return this.map;
+    }
+
 }

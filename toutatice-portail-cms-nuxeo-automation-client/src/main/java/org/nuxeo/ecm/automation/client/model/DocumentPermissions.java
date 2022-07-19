@@ -84,7 +84,7 @@ public class DocumentPermissions {
             final List<String> permissions = ace.getValue();
             if (permissions != null) {
                 PropertyList propL = new PropertyList();
-                propL.getList().addAll(permissions);
+                propL.list().addAll(permissions);
                 builder.append(DocumentPermissions.toString(propL));
             }
 

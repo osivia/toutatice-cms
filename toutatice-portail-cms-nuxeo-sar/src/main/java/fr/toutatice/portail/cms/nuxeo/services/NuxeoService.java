@@ -145,8 +145,8 @@ public class NuxeoService extends ServiceMBeanSupport implements NuxeoServiceMBe
 
             URI uri = NuxeoSatelliteConnectionProperties.getConnectionProperties(satellite).getPrivateBaseUri();
 
-            String url = uri.toString() + "/site/automation";
-            HttpAutomationClient client = new HttpAutomationClient(url, satellite);
+            String url = uri + "/site/automation";
+            HttpAutomationClient client = new HttpAutomationClient(url);
 
             if (userId != null) {
                 client.setRequestInterceptor(new PortalSSOAuthInterceptor(secretKey, userId));

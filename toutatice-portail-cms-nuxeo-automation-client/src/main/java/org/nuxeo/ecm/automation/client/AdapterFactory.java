@@ -1,10 +1,17 @@
 /*
- * Copyright (c) 2006-2011 Nuxeo SA (http://nuxeo.com/) and others.
+ * (C) Copyright 2006-2011 Nuxeo SA (http://nuxeo.com/) and others.
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
  * Contributors:
  *     bstefanescu
@@ -12,34 +19,21 @@
 package org.nuxeo.ecm.automation.client;
 
 /**
- * A factory for adapters. Adapters can be used to adapt client and session objects.
- * For example you can contribute an adapter on the session to have an API suited
- * for your needs.
+ * A factory for adapters. Adapters can be used to adapt client and session objects. For example you can contribute an
+ * adapter on the session to have an API suited for your needs.
  * <p>
  * To register adapters use {@link AutomationClient#registerAdapter(AdapterFactory)}.
- *
  *
  * @author <a href="mailto:bs@nuxeo.com">Bogdan Stefanescu</a>
  */
 public interface AdapterFactory<T> {
 
     /**
-     * The class to adapt.
-     * @return
-     */
-    Class<?> getAcceptType();
-
-    /**
-     * The adapter class.
-     * @return
-     */
-    Class<T> getAdapterType();
-
-    /**
      * Adapt the given object and return the adapter instance.
+     *
      * @param toAdapt
      * @return
      */
-    T getAdapter(Object toAdapt);
+    T getAdapter(Session session, Class<T> clazz);
 
 }

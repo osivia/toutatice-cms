@@ -16,14 +16,14 @@
  */
 package fr.toutatice.portail.cms.nuxeo.api;
 
-import java.util.Map;
-
-import org.codehaus.jackson.JsonNode;
-import org.nuxeo.ecm.automation.client.jaxrs.spi.JsonMarshalling.RemoteThrowable;
+import com.fasterxml.jackson.databind.JsonNode;
+import org.nuxeo.ecm.automation.client.RemoteThrowable;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.core.cms.CMSException;
+
+import java.util.Map;
 
 /**
  * The Class NuxeoException.

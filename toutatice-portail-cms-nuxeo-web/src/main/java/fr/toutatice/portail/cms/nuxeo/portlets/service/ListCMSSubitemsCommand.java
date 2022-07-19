@@ -125,7 +125,7 @@ public class ListCMSSubitemsCommand implements INuxeoCommand {
             PropertyMap nxProperties = new PropertyMap();
             nxProperties.set("dc:title", documentTitle);
 
-            Document poorDocument = new Document(documentId, documentType, null, null, documentPath, null, null, null, null, null, nxProperties, null);
+            Document poorDocument = new Document(documentId, documentType, null, null, documentPath, null, null, null, null, null, null, nxProperties, null);
 
             CMSService cmsService = (CMSService) NuxeoController.getCMSService();
             CMSItem cmsItem = cmsService.createItem(this.cmsContext, poorDocument.getPath(), poorDocument.getTitle(), poorDocument);

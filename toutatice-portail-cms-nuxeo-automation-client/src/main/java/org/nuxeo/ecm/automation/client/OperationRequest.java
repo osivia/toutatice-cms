@@ -1,20 +1,27 @@
 /*
- * Copyright (c) 2006-2011 Nuxeo SA (http://nuxeo.com/) and others.
+ * (C) Copyright 2006-2011 Nuxeo SA (http://nuxeo.com/) and others.
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
  * Contributors:
  *     bstefanescu
  */
 package org.nuxeo.ecm.automation.client;
 
+import java.io.IOException;
 import java.util.Map;
 
 import org.nuxeo.ecm.automation.client.model.OperationDocumentation;
-import org.nuxeo.ecm.automation.client.model.OperationInput;
 
 /**
  * @author <a href="mailto:bs@nuxeo.com">Bogdan Stefanescu</a>
@@ -22,31 +29,26 @@ import org.nuxeo.ecm.automation.client.model.OperationInput;
 // TODO: comment me.
 public interface OperationRequest {
 
-    public static final String APP_HEADER = "X-Application-Name";
-
-    public static final String APP_HEADER_VALUE = "OSIVIA Portal";
-	
     Session getSession();
 
     String getUrl();
 
     /**
      * Get the ID of the operation to be invoked
+     *
      * @return
      */
     OperationDocumentation getOperation();
 
-    OperationRequest setInput(OperationInput input);
+    OperationRequest setInput(Object input);
 
-    OperationInput getInput();
+    Object getInput();
 
     OperationRequest set(String key, Object value);
 
     OperationRequest setContextProperty(String key, Object value);
 
-    Object execute() throws Exception;
-
-    void execute(AsyncCallback<Object> cb);
+    Object execute() throws IOException;
 
     Map<String, Object> getParameters();
 

@@ -1,10 +1,17 @@
 /*
- * Copyright (c) 2006-2011 Nuxeo SA (http://nuxeo.com/) and others.
+ * (C) Copyright 2006-2016 Nuxeo SA (http://nuxeo.com/) and others.
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
  * Contributors:
  *     bstefanescu
@@ -20,6 +27,8 @@ import java.io.OutputStream;
 import java.io.Reader;
 
 /**
+ * File is deleted on JVM exit. You should delete it explicitly earlier if you know it won't be used anymore.
+ *
  * @author <a href="mailto:bs@nuxeo.com">Bogdan Stefanescu</a>
  */
 public class IOUtils {
@@ -45,8 +54,7 @@ public class IOUtils {
         return new byte[preferredSize];
     }
 
-    public static void copy(InputStream in, OutputStream out)
-            throws IOException {
+    public static void copy(InputStream in, OutputStream out) throws IOException {
         byte[] buffer = createBuffer(in.available());
         int read;
         while ((read = in.read(buffer)) != -1) {
@@ -55,13 +63,15 @@ public class IOUtils {
     }
 
     public static File copyToTempFile(InputStream in) throws IOException {
-        File file = File.createTempFile("nxautomation-", ".tmp");
+        File file = File.createTempFile("nxautomation-", ".tmp", new File(System.getProperty("java.io.tmpdir")));
+        file.deleteOnExit();
         copyToFile(in, file, true);
         return file;
     }
 
     public static File copyToTempFile(InputStream in, boolean closeIn) throws IOException {
-        File file = File.createTempFile("nxautomation-", ".tmp");
+        File file = File.createTempFile("nxautomation-", ".tmp", new File(System.getProperty("java.io.tmpdir")));
+        file.deleteOnExit();
         copyToFile(in, file, closeIn);
         return file;
     }

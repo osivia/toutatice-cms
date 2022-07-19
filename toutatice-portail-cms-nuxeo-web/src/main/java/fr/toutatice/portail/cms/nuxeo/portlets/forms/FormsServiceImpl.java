@@ -32,6 +32,9 @@ import javax.naming.Name;
 import javax.portlet.PortletContext;
 import javax.servlet.http.HttpServletRequest;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -41,9 +44,6 @@ import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.ObjectWriter;
-import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
 import org.dom4j.Element;
 import org.nuxeo.ecm.automation.client.model.DocRef;
 import org.nuxeo.ecm.automation.client.model.Document;
@@ -140,7 +140,7 @@ public class FormsServiceImpl implements IFormsService {
 
         // JSON object mapper
         this.mapper = new ObjectMapper();
-        this.mapper.getSerializationConfig().setSerializationInclusion(Inclusion.NON_DEFAULT);
+        this.mapper.setSerializationInclusion(JsonInclude.Include.NON_DEFAULT);
 
         // CMS service locator
         this.cmsServiceLocator = Locator.findMBean(ICMSServiceLocator.class, ICMSServiceLocator.MBEAN_NAME);

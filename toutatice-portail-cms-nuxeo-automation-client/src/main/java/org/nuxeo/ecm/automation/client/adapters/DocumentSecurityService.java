@@ -3,14 +3,14 @@
  */
 package org.nuxeo.ecm.automation.client.adapters;
 
-import java.util.List;
-
+import org.apache.commons.lang3.StringUtils;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.DocRef;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.DocumentPermissions;
-import org.nuxeo.ecm.automation.client.model.ListString;
+
+import java.util.List;
 
 
 /**
@@ -102,7 +102,7 @@ public class DocumentSecurityService {
                 .setInput(docRef)
             .set("acl", acl)
             .set("aces", permissions)
-            .set("userNames", ListString.getInstance().getAsString(userNames))
+            .set("userNames", StringUtils.join(userNames, ","))
             .set("all", removeAll)
             .set("blockInheritance", blockInheritance);
         return (Document) request.execute(); 

@@ -1,10 +1,17 @@
 /*
- * Copyright (c) 2006-2011 Nuxeo SA (http://nuxeo.com/) and others.
+ * (C) Copyright 2006-2011 Nuxeo SA (http://nuxeo.com/) and others.
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
  * Contributors:
  *     bstefanescu
@@ -13,12 +20,12 @@ package org.nuxeo.ecm.automation.client.jaxrs.spi;
 
 import static org.nuxeo.ecm.automation.client.Constants.CTYPE_REQUEST_NOCHARSET;
 import static org.nuxeo.ecm.automation.client.Constants.REQUEST_ACCEPT_HEADER;
+import static org.nuxeo.ecm.automation.client.Constants.HEADER_NX_SCHEMAS;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
-import org.nuxeo.ecm.automation.client.AsyncCallback;
 import org.nuxeo.ecm.automation.client.AutomationClient;
 import org.nuxeo.ecm.automation.client.LoginInfo;
 import org.nuxeo.ecm.automation.client.OperationRequest;
@@ -33,8 +40,6 @@ import org.nuxeo.ecm.automation.client.model.OperationInput;
  * @author <a href="mailto:bs@nuxeo.com">Bogdan Stefanescu</a>
  */
 public class DefaultSession implements Session {
-	
-	private static final String ABSOLUTE_URL_PREFIX = "http:";
 
     protected final AbstractAutomationClient client;
 
@@ -42,13 +47,15 @@ public class DefaultSession implements Session {
 
     protected final LoginInfo login;
 
-    public DefaultSession(AbstractAutomationClient client, Connector connector,
-            LoginInfo login) {
+    protected String defaultSchemas = null;
+
+    public DefaultSession(AbstractAutomationClient client, Connector connector, LoginInfo login) {
         this.client = client;
         this.connector = connector;
         this.login = login;
     }
 
+    @Override
     public AutomationClient getClient() {
         return client;
     }
@@ -57,33 +64,36 @@ public class DefaultSession implements Session {
         return connector;
     }
 
+    @Override
     public LoginInfo getLogin() {
         return login;
     }
 
+    @Override
     public <T> T getAdapter(Class<T> type) {
         return client.getAdapter(this, type);
     }
 
-    public Object execute(OperationRequest request) throws Exception {
+    @Override
+    public String getDefaultSchemas() {
+        return defaultSchemas;
+    }
+
+    @Override
+    public void setDefaultSchemas(String defaultSchemas) {
+        this.defaultSchemas = defaultSchemas;
+    }
+
+    @Override
+    public Object execute(OperationRequest request) throws IOException {
         Request req;
         String content = JsonMarshalling.writeRequest(request);
         String ctype;
-        OperationInput input = request.getInput();
-        if (input != null && input.isBinary()) {
-            MultipartInput mpinput = new MultipartInput();
-            mpinput.setRequest(content);
-            ctype = mpinput.getContentType();
-            if (input instanceof Blob) {
-                Blob blob = (Blob) input;
-                mpinput.setBlob(blob);
-            } else if (input instanceof Blobs) {
-                mpinput.setBlobs((Blobs) input);
-            } else {
-                throw new IllegalArgumentException(
-                        "Unsupported binary input object: " + input);
-            }
+        Object input = request.getInput();
+        if (input instanceof OperationInput && ((OperationInput) input).isBinary()) {
+            MultipartInput mpinput = Request.buildMultipartInput(input, content);
             req = new Request(Request.POST, request.getUrl(), mpinput);
+            ctype = mpinput.getContentType();
         } else {
             req = new Request(Request.POST, request.getUrl(), content);
             ctype = CTYPE_REQUEST_NOCHARSET;
@@ -94,74 +104,31 @@ public class DefaultSession implements Session {
         }
         req.put("Accept", REQUEST_ACCEPT_HEADER);
         req.put("Content-Type", ctype);
+        if (req.get(HEADER_NX_SCHEMAS) == null && defaultSchemas != null) {
+            req.put(HEADER_NX_SCHEMAS, defaultSchemas);
+        }
         return connector.execute(req);
     }
 
-    public void execute(final OperationRequest request,
-            final AsyncCallback<Object> cb) {
-        client.asyncExec(new Runnable() {
-            public void run() {
-                try {
-                    cb.onSuccess(execute(request));
-                } catch (Throwable t) {
-                    cb.onError(t);
-                }
-            }
-        });
-    }
-
-    public Blob getFile(String path) throws Exception {
-    	/* 
-    	 * 5.6-6.0 compatibility 
-    	 * FIXME: test 5.6! 
-    	 */
-    	String filePath = StringUtils.EMPTY;
-    	if(path != null && path.contains(ABSOLUTE_URL_PREFIX)){
-    		filePath = path;
-    	} else {
-    		filePath = client.getBaseUrl() + path;
-    	}
-        Request req = new Request(Request.GET, filePath);
+    @Override
+    public Blob getFile(String path) throws IOException {
+        Request req = new Request(Request.GET, path);
         return (Blob) connector.execute(req);
     }
 
-    public Blobs getFiles(String path) throws Exception {
+    @Override
+    public Blobs getFiles(String path) throws IOException {
         Request req = new Request(Request.GET, client.getBaseUrl() + path);
         return (Blobs) connector.execute(req);
     }
 
-    public void getFile(final String path, final AsyncCallback<Blob> cb)
-            throws Exception {
-        client.asyncExec(new Runnable() {
-            public void run() {
-                try {
-                    cb.onSuccess(getFile(path));
-                } catch (Throwable t) {
-                    cb.onError(t);
-                }
-            }
-        });
-    }
-
-    public void getFiles(final String path, final AsyncCallback<Blobs> cb)
-            throws Exception {
-        client.asyncExec(new Runnable() {
-            public void run() {
-                try {
-                    cb.onSuccess(getFiles(path));
-                } catch (Throwable t) {
-                    cb.onError(t);
-                }
-            }
-        });
-    }
-
-    public OperationRequest newRequest(String id) throws Exception {
+    @Override
+    public OperationRequest newRequest(String id) {
         return newRequest(id, new HashMap<String, Object>());
     }
 
-    public OperationRequest newRequest(String id, Map<String, Object> ctx)
-            throws Exception {
+    @Override
+    public OperationRequest newRequest(String id, Map<String, Object> ctx) {
         OperationDocumentation op = getOperation(id);
         if (op == null) {
             throw new IllegalArgumentException("No such operation: " + id);
@@ -169,10 +136,12 @@ public class DefaultSession implements Session {
         return new DefaultOperationRequest(this, op, ctx);
     }
 
+    @Override
     public OperationDocumentation getOperation(String id) {
         return client.getRegistry().getOperation(id);
     }
 
+    @Override
     public Map<String, OperationDocumentation> getOperations() {
         return client.getRegistry().getOperations();
     }

@@ -1,10 +1,17 @@
 /*
- * Copyright (c) 2006-2011 Nuxeo SA (http://nuxeo.com/) and others.
+ * (C) Copyright 2006-2011 Nuxeo SA (http://nuxeo.com/) and others.
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
  * Contributors:
  *     bstefanescu
@@ -44,11 +51,10 @@ public class MultipartRequestEntity extends AbstractHttpEntity {
 
     public MultipartRequestEntity(MimeMultipart mp) {
         this.mp = mp;
-        setContentType(mp.getContentType() + "; type=\""
-                + Constants.CTYPE_REQUEST_NOCHARSET + "\"; start=\"request\"");
+        setContentType(mp.getContentType() + "; type=\"" + Constants.CTYPE_REQUEST_NOCHARSET + "\"; start=\"request\"");
     }
 
-    public void setRequest(String content) throws Exception {
+    public void setRequest(String content) throws MessagingException {
         MimeBodyPart part = new MimeBodyPart();
         part.setText(content, "UTF-8");
         part.setContentID("request");
@@ -58,16 +64,17 @@ public class MultipartRequestEntity extends AbstractHttpEntity {
         mp.addBodyPart(part);
     }
 
-    public void setBlob(Blob blob) throws Exception {
+    public void setBlob(Blob blob) throws MessagingException, IOException {
         setBlob(blob, "input");
     }
 
-    protected void setBlob(Blob blob, String id) throws Exception {
+    protected void setBlob(Blob blob, String id) throws MessagingException, IOException {
         MimeBodyPart part = new MimeBodyPart();
         if (blob instanceof HasFile) {
             part.attachFile(((HasFile) blob).getFile());
         } else {
             part.setDataHandler(new DataHandler(new BlobDataSource(blob)));
+            part.setFileName(blob.getFileName());
         }
         part.setHeader("Content-Type", blob.getMimeType());
         part.setHeader("Content-Transfer-Encoding", "binary");
@@ -79,7 +86,7 @@ public class MultipartRequestEntity extends AbstractHttpEntity {
         mp.addBodyPart(part);
     }
 
-    public void setBlobs(List<Blob> blobs) throws Exception {
+    public void setBlobs(List<Blob> blobs) throws MessagingException, IOException {
         for (int i = 0, size = blobs.size(); i < size; i++) {
             setBlob(blobs.get(i), "input#" + i);
         }

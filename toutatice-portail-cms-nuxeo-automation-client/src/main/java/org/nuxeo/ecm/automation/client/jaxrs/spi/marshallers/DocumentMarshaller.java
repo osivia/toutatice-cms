@@ -1,27 +1,37 @@
 /*
- * Copyright (c) 2006-2011 Nuxeo SA (http://nuxeo.com/) and others.
+ * (C) Copyright 2006-2011 Nuxeo SA (http://nuxeo.com/) and others.
  *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
  * Contributors:
  *     matic
  */
 package org.nuxeo.ecm.automation.client.jaxrs.spi.marshallers;
 
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.JsonToken;
+import java.io.IOException;
+
 import org.nuxeo.ecm.automation.client.jaxrs.spi.JsonMarshaller;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
+import org.nuxeo.ecm.automation.client.model.PropertyMapSetter;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 
 /**
  * @author matic
- *
  */
 public class DocumentMarshaller implements JsonMarshaller<Document> {
 
@@ -36,16 +46,17 @@ public class DocumentMarshaller implements JsonMarshaller<Document> {
     }
 
     @Override
-    public Document read(JsonParser jp) throws Exception {
+    public Document read(JsonParser jp) throws IOException {
         return readDocument(jp);
     }
 
-    protected static Document readDocument(JsonParser jp) throws Exception {
+    protected static Document readDocument(JsonParser jp) throws IOException {
         String uid = null;
         String type = null;
         String path = null;
         String state = null;
         String versionLabel = null;
+        String isCheckedOut = null;
         String lockCreated = null;
         String lockOwner = null;
         String repository = null;
@@ -53,8 +64,9 @@ public class DocumentMarshaller implements JsonMarshaller<Document> {
         String changeToken = null;
         JsonToken tok = jp.nextToken();
         PropertyMap props = new PropertyMap();
+        PropertyMapSetter propsSetter = new PropertyMapSetter(props);
         PropertyMap contextParameters = new PropertyMap();
-        while (tok != JsonToken.END_OBJECT) {
+        while (tok != null && tok != JsonToken.END_OBJECT) {
             String key = jp.getCurrentName();
             tok = jp.nextToken();
             if (key.equals("uid")) {
@@ -67,22 +79,24 @@ public class DocumentMarshaller implements JsonMarshaller<Document> {
                 state = jp.getText();
             } else if (key.equals("versionLabel")) {
                 versionLabel = jp.getText();
+            } else if (key.equals("isCheckedOut")) {
+                isCheckedOut = jp.getText();
             } else if (key.equals("lock")) {
                 if (!JsonToken.VALUE_NULL.equals(jp.getCurrentToken())) {
                     String[] lock = jp.getText().split(":");
                     lockOwner = lock[0];
-                    lockCreated = lock[1];                    
+                    lockCreated = lock[1];
                 }
             } else if (key.equals("lockCreated")) {
                 lockCreated = jp.getText();
             } else if (key.equals("lockOwner")) {
                 lockOwner = jp.getText();
-            }else if (key.equals("repository")) {
+            } else if (key.equals("repository")) {
                 repository = jp.getText();
             } else if (key.equals("title")) {
-                props.set("dc:title", jp.getText());
+                propsSetter.set("dc:title", jp.getText());
             } else if (key.equals("lastModified")) {
-                props.set("dc:modified", jp.getText());
+                propsSetter.set("dc:modified", jp.getText());
             } else if (key.equals("properties")) {
                 readProperties(jp, props);
             } else if (key.equals("facets")) {
@@ -98,37 +112,41 @@ public class DocumentMarshaller implements JsonMarshaller<Document> {
             tok = jp.nextToken();
         }
         if (tok == null) {
-            throw new IllegalArgumentException(
-                    "Unexpected end of stream.");
+            throw new IllegalArgumentException("Unexpected end of stream.");
         }
-        return new Document(uid, type, facets, changeToken, path, state, lockOwner, lockCreated, repository, versionLabel, props, contextParameters);
+        return new Document(uid, type, facets, changeToken, path, state, lockOwner, lockCreated, repository,
+                versionLabel, isCheckedOut, props, contextParameters);
     }
 
-    protected static void readProperties(JsonParser jp, PropertyMap props) throws Exception {
+    protected static void readProperties(JsonParser jp, PropertyMap props) throws IOException {
+        PropertyMapSetter setter = new PropertyMapSetter(props);
         JsonToken tok = jp.nextToken();
-        while (tok != JsonToken.END_OBJECT) {
+        while (tok != null && tok != JsonToken.END_OBJECT) {
             String key = jp.getCurrentName();
             tok = jp.nextToken();
             if (tok == JsonToken.START_ARRAY) {
-                props.set(key, readArrayProperty(jp));
+                setter.set(key, readArrayProperty(jp));
             } else if (tok == JsonToken.START_OBJECT) {
-                props.set(key, readObjectProperty(jp));
-            } else if (tok  == JsonToken.VALUE_NULL) {
-                props.set(key, (String)null);
+                setter.set(key, readObjectProperty(jp));
+            } else if (tok == JsonToken.VALUE_NULL) {
+                setter.set(key, (String) null);
             } else {
-                props.set(key, jp.getText());
+                setter.set(key, jp.getText());
             }
             tok = jp.nextToken();
         }
+        if (tok == null) {
+            throw new IllegalArgumentException("Unexpected end of stream.");
+        }
     }
 
-    protected static PropertyMap readObjectProperty(JsonParser jp) throws Exception {
+    protected static PropertyMap readObjectProperty(JsonParser jp) throws IOException {
         PropertyMap map = new PropertyMap();
         readProperties(jp, map);
         return map;
     }
 
-    protected static PropertyList readArrayProperty(JsonParser jp) throws Exception {
+    protected static PropertyList readArrayProperty(JsonParser jp) throws IOException {
         PropertyList list = new PropertyList();
         JsonToken tok = jp.nextToken();
         while (tok != JsonToken.END_ARRAY) {
@@ -145,7 +163,9 @@ public class DocumentMarshaller implements JsonMarshaller<Document> {
     }
 
     @Override
-    public void write(JsonGenerator jg, Document value) throws Exception {
+    public void write(JsonGenerator jg, Object value) throws IOException {
+        // TODO: extend the server json API to allow for document refs passed as
+        // JSON data-structures instead of the input ref microsyntax used by
         throw new UnsupportedOperationException();
     }
 

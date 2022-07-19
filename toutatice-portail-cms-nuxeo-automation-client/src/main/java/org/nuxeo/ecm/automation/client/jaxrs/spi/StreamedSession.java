@@ -39,8 +39,7 @@ public class StreamedSession extends DefaultSession {
     }
 
     @Override
-    public OperationRequest newRequest(String id, Map<String, Object> ctx)
-            throws Exception {
+    public OperationRequest newRequest(String id, Map<String, Object> ctx) {
         OperationDocumentation op = getOperation(id);
         if (op == null) {
             throw new IllegalArgumentException("No such operation: " + id);
