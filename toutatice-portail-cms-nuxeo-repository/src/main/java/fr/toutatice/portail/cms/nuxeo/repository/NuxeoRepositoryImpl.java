@@ -5,8 +5,10 @@ import java.util.List;
 
 import javax.portlet.PortletContext;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.osivia.portal.api.cache.services.CacheInfo;
+import org.osivia.portal.api.cms.EcmDocument;
 import org.osivia.portal.api.cms.UniversalID;
 import org.osivia.portal.api.cms.exception.CMSException;
 import org.osivia.portal.api.cms.exception.DocumentNotFoundException;
@@ -14,24 +16,25 @@ import org.osivia.portal.api.cms.model.Document;
 import org.osivia.portal.api.cms.model.NavigationItem;
 import org.osivia.portal.api.cms.repository.BaseUserRepository;
 import org.osivia.portal.api.cms.repository.cache.SharedRepositoryKey;
-import org.osivia.portal.api.cms.repository.model.user.NavigationItemImpl;
 import org.osivia.portal.api.cms.service.GetChildrenRequest;
 import org.osivia.portal.api.cms.service.Request;
 import org.osivia.portal.api.cms.service.Result;
+import org.osivia.portal.api.cms.service.SpaceCacheBean;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.core.cms.CMSItem;
 import org.osivia.portal.core.cms.CMSObjectPath;
 import org.osivia.portal.core.cms.CMSPublicationInfos;
 import org.osivia.portal.core.cms.CMSServiceCtx;
+import org.osivia.portal.core.cms.DocumentsMetadata;
 import org.osivia.portal.core.cms.ICMSServiceLocator;
 import org.osivia.portal.core.cms.spi.NuxeoRepository;
 import org.osivia.portal.core.cms.spi.NuxeoRequest;
 import org.osivia.portal.core.cms.spi.NuxeoResult;
-import org.osivia.portal.core.page.PageProperties;
 import org.osivia.portal.core.web.IWebIdService;
 
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
+
 
 public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepository {
 
@@ -45,7 +48,12 @@ public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepo
      * CMS service locator.
      */
     private final ICMSServiceLocator cmsServiceLocator;
-
+    
+    
+    /**
+     * Logger.
+     */
+    private static final Log LOG = LogFactory.getLog(NuxeoRepositoryImpl.class);
 
     private INuxeoService getNuxeoService() {
 
@@ -119,54 +127,136 @@ public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepo
     private NuxeoCommandContext createCommandContext() {
         return createCommandContext(true);
     }
+    
+   
+    
+    /* Experimental feature for publish space */
+    /* Optimized for performance : do not need to fetch each document */
+    /* Page Refreshed are ignored */
+
+    
+    
+   DocumentsMetadata cacheMetadatas = null;
+   Long cacheTs = null;   
+    
+
+   
+   
+   private synchronized DocumentsMetadata  getCacheMetaDataCommunityPrototype(String parentWebId) throws CMSException {
+
+       CMSServiceCtx cmsContext = getNavigationCMSContext();
+
+       try {
+
+           SpaceCacheBean spaceCacheInformations = getSpaceCacheInformations(parentWebId);
+           if (cacheTs == null || (spaceCacheInformations != null && spaceCacheInformations.getLastSpaceModification() != null &&  spaceCacheInformations.getLastSpaceModification() > cacheTs)) {
+               cacheMetadatas = cmsServiceLocator.getCMSService().getDocumentsMetadata(cmsContext, "/default-domain/communaute", null);
+               cacheTs = System.currentTimeMillis();
+           }
+
+       } catch (org.osivia.portal.core.cms.CMSException e) {
+           throw new CMSException(e);
+       }
+
+       return cacheMetadatas;
+   }
+ 
+    
 
     @Override
     public String getInternalId(String path) throws CMSException {
 
 
-        CMSPublicationInfos res = (CMSPublicationInfos) ((NuxeoResult) ((NuxeoUserStorage) super.getUserStorage()).executeCommand(createCommandContext(), new PublishInfosCommand(path))).getResult();
+        org.nuxeo.ecm.automation.client.model.Document nxDocument = null;
+        String parentWebId = null;
 
+        //TODO il faudrait fetcher tous les spaces pour voir auquel appartient le document
+        // (le plus proche)
+        
+        if (path.startsWith("/default-domain/communaute/")) {
 
-        List<Integer> errors = res.getErrorCodes();
-        if (errors != null) {
-            if (errors.contains(CMSPublicationInfos.ERROR_CONTENT_NOT_FOUND)) {
-                throw new DocumentNotFoundException();
+            try {
+                CMSServiceCtx cmsContext = getNavigationCMSContext();
+                
+                
+                CMSItem spaceConfig = cmsServiceLocator.getCMSService().getSpaceConfig(cmsContext, "/default-domain/communaute");
+                parentWebId = spaceConfig.getWebId();
+                  
+                
+                DocumentsMetadata metadatas = getCacheMetaDataCommunityPrototype( parentWebId);
+                nxDocument = null;
+
+                for (EcmDocument ecmDocument : metadatas.getDocuments()) {
+
+                    org.nuxeo.ecm.automation.client.model.Document iterDoc = (org.nuxeo.ecm.automation.client.model.Document) ecmDocument;
+
+                    if (iterDoc.getPath().equals(path)) {
+                        // Ensure facet is set on remote proxy
+                        if (!iterDoc.getFacets().list().contains("isRemoteProxy")) {
+                            if (!iterDoc.getPath().endsWith(".proxy")) {
+                                // Add facet
+                                ((NuxeoUserStorage) super.getUserStorage()).executeCommand(createCommandContext(false), new AddRemoteProxyFacetCommand(path)).getResult();
+                                cacheTs = null;
+                                // reload
+                                NuxeoCommandContext ctx = createCommandContext(false);
+                                // to prevent to take the already fetch in same request
+                                ctx.setForceReload(true);
+                                iterDoc = (org.nuxeo.ecm.automation.client.model.Document) ((NuxeoUserStorage) super.getUserStorage()).executeCommand(ctx, new DocumentFetchPublishedCommand(path)).getResult();
+                            }
+                        }
+                        
+                        nxDocument = iterDoc;
+                        break;
+                    }
+                }
+                
+
+                
+            } catch (org.osivia.portal.core.cms.CMSException e) {
+                throw new CMSException(e);
             }
-        }
-
-        org.nuxeo.ecm.automation.client.model.Document nxDocument;
-
-        if (!res.isPublished())
-            nxDocument = (org.nuxeo.ecm.automation.client.model.Document) ((NuxeoUserStorage) super.getUserStorage()).executeCommand(createCommandContext(), new DocumentFetchLiveCommand(res.getDocumentPath(), "Read")).getResult();
-        else {
-            nxDocument = (org.nuxeo.ecm.automation.client.model.Document) ((NuxeoUserStorage) super.getUserStorage()).executeCommand(createCommandContext(), new DocumentFetchPublishedCommand(res.getDocumentPath())).getResult();
             
-            // Ensure facet is set on remote paroxy
-             if (!nxDocument.getFacets().list().contains("isRemoteProxy")) {
-                if (!nxDocument.getPath().endsWith(".proxy")) {
-                    // Add facet
-                    ((NuxeoUserStorage) super.getUserStorage()).executeCommand(createCommandContext(), new AddRemoteProxyFacetCommand(path)).getResult();
-                    // reload
-                    NuxeoCommandContext ctx = createCommandContext(false);
-                    //to prevent  to take the already fetch in same request
-                    ctx.setForceReload(true);
-                    nxDocument = (org.nuxeo.ecm.automation.client.model.Document) ((NuxeoUserStorage) super.getUserStorage()).executeCommand(ctx, new DocumentFetchPublishedCommand(res.getDocumentPath())).getResult();
+            
+            if( nxDocument == null) {
+                LOG.warn("Document with path "+ path+" has not been found. Maybe cache is not refreshed");
+            }
+        } 
+        
+        
+        if( nxDocument == null)  {
+            /* Default treatment */
+
+            CMSPublicationInfos res = (CMSPublicationInfos) ((NuxeoResult) ((NuxeoUserStorage) super.getUserStorage()).executeCommand(createCommandContext(), new PublishInfosCommand(path))).getResult();
+
+
+            List<Integer> errors = res.getErrorCodes();
+            if (errors != null) {
+                if (errors.contains(CMSPublicationInfos.ERROR_CONTENT_NOT_FOUND)) {
+                    throw new DocumentNotFoundException();
                 }
             }
+
+
+            if (!res.isPublished())
+                nxDocument = (org.nuxeo.ecm.automation.client.model.Document) ((NuxeoUserStorage) super.getUserStorage()).executeCommand(createCommandContext(), new DocumentFetchLiveCommand(res.getDocumentPath(), "Read")).getResult();
+            else {
+                nxDocument = (org.nuxeo.ecm.automation.client.model.Document) ((NuxeoUserStorage) super.getUserStorage()).executeCommand(createCommandContext(), new DocumentFetchPublishedCommand(res.getDocumentPath())).getResult();
+            }
         }
+
         
-
-
         String internalId = (String) nxDocument.getString("ttc:webid");
 
-
-        if (res.isPublished()) {
-            if (nxDocument.getFacets().list().contains("isRemoteProxy")) {
-                // Get parent
-                org.nuxeo.ecm.automation.client.model.Document parent = (org.nuxeo.ecm.automation.client.model.Document) ((NuxeoUserStorage) super.getUserStorage())
-                    .executeCommand(createCommandContext(), new GetParentCommand(nxDocument)).getResult();
-                internalId = internalId + RPXY_WID_MARKER + (String) parent.getString("ttc:webid");
+        
+        
+        if (nxDocument.getFacets().list().contains("isRemoteProxy")) {
+            // Get parent
+            if( parentWebId == null)    {
+                org.nuxeo.ecm.automation.client.model.Document parent = (org.nuxeo.ecm.automation.client.model.Document) ((NuxeoUserStorage) super.getUserStorage()).executeCommand(createCommandContext(), new GetParentCommand(nxDocument)).getResult();
+                parentWebId =  (String) parent.getString("ttc:webid");
             }
+            
+            internalId = internalId + RPXY_WID_MARKER + parentWebId;
         }
 
 
