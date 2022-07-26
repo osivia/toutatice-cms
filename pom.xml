@@ -4,7 +4,7 @@
 
     <groupId>toutatice-portail.cms</groupId>
     <artifactId>cms-parent</artifactId>
-    <version>5.0.1</version>
+    <version>5.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Toutatice Portal - Parent</name>
 
