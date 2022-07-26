@@ -9,12 +9,16 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cms.EcmDocument;
+import org.osivia.portal.api.cms.Symlinks;
 import org.osivia.portal.api.cms.UniversalID;
+import org.osivia.portal.api.cms.UpdateInformations;
+import org.osivia.portal.api.cms.UpdateScope;
 import org.osivia.portal.api.cms.exception.CMSException;
 import org.osivia.portal.api.cms.exception.DocumentNotFoundException;
 import org.osivia.portal.api.cms.model.Document;
 import org.osivia.portal.api.cms.model.NavigationItem;
 import org.osivia.portal.api.cms.repository.BaseUserRepository;
+import org.osivia.portal.api.cms.repository.cache.SharedRepository;
 import org.osivia.portal.api.cms.repository.cache.SharedRepositoryKey;
 import org.osivia.portal.api.cms.service.GetChildrenRequest;
 import org.osivia.portal.api.cms.service.Request;
@@ -32,8 +36,10 @@ import org.osivia.portal.core.cms.spi.NuxeoRequest;
 import org.osivia.portal.core.cms.spi.NuxeoResult;
 import org.osivia.portal.core.web.IWebIdService;
 
+import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
+
 
 
 public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepository {
@@ -130,17 +136,15 @@ public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepo
     
    
     
-    /* Experimental feature for publish space */
+    /* Experimental feature for publish space                         */
     /* Optimized for performance : do not need to fetch each document */
-    /* Page Refreshed are ignored */
+    /* Page Refreshed are ignored                                     */
 
     
     
-   DocumentsMetadata cacheMetadatas = null;
-   Long cacheTs = null;   
+   private static DocumentsMetadata cacheMetadatas = null;
+   private static Long cacheTs = null;   
     
-
-   
    
    private synchronized DocumentsMetadata  getCacheMetaDataCommunityPrototype(String parentWebId) throws CMSException {
 
@@ -149,12 +153,37 @@ public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepo
        try {
 
            SpaceCacheBean spaceCacheInformations = getSpaceCacheInformations(parentWebId);
-           if (cacheTs == null || (spaceCacheInformations != null && spaceCacheInformations.getLastSpaceModification() != null &&  spaceCacheInformations.getLastSpaceModification() > cacheTs)) {
-               cacheMetadatas = cmsServiceLocator.getCMSService().getDocumentsMetadata(cmsContext, "/default-domain/communaute", null);
+           if (cacheTs == null 
+              ||
+              (spaceCacheInformations != null && spaceCacheInformations.getLastSpaceModification() != null &&  spaceCacheInformations.getLastSpaceModification() > cacheTs)
+              ||
+              ( cacheTs + SharedRepository.DOCUMENT_RELOAD_TIMEOUT < System.currentTimeMillis())
+              )    {
+ 
+               Symlinks symLinks = new Symlinks();
+               symLinks.setLinks(new ArrayList<>());
+              // Nuxeo command
+               INuxeoCommand command = new DocumentsMetadataCommand( "/default-domain/communaute", RequestPublishStatus.published, symLinks, null);
+
+               // Super-user scope
+               String savedScope = cmsContext.getScope();
+               cmsContext.setScope("superuser_no_cache");
+
+
+               try {
+                   cacheMetadatas = (DocumentsMetadata)  ((NuxeoUserStorage) super.getUserStorage()).executeCommand(createCommandContext(false), command).getResult();
+               } catch (CMSException e) {
+                   throw e;
+               } catch (Exception e) {
+                   throw new CMSException(e);
+               } finally {
+                   cmsContext.setScope(savedScope);
+               }
+               
                cacheTs = System.currentTimeMillis();
            }
 
-       } catch (org.osivia.portal.core.cms.CMSException e) {
+       } catch (Exception e) {
            throw new CMSException(e);
        }
 
@@ -196,7 +225,7 @@ public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepo
                             if (!iterDoc.getPath().endsWith(".proxy")) {
                                 // Add facet
                                 ((NuxeoUserStorage) super.getUserStorage()).executeCommand(createCommandContext(false), new AddRemoteProxyFacetCommand(path)).getResult();
-                                cacheTs = null;
+                                notifyUpdate(new UpdateInformations(new UniversalID("nx",(String) iterDoc.getString("ttc:webid")), new UniversalID("nx",parentWebId), UpdateScope.SCOPE_SPACE, false));
                                 // reload
                                 NuxeoCommandContext ctx = createCommandContext(false);
                                 // to prevent to take the already fetch in same request

@@ -38,10 +38,10 @@ import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.model.Document;
-import org.nuxeo.ecm.automation.client.model.Documents;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cms.UniversalID;
+import org.osivia.portal.api.error.Debug;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.log.LoggerMessage;
 import org.osivia.portal.api.tokens.ITokenService;
@@ -60,7 +60,7 @@ import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
 import fr.toutatice.portail.cms.nuxeo.api.services.dao.DocumentDAO;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.ViewDocumentPortlet;
+
 
 
 /**
@@ -141,6 +141,7 @@ public class BinaryServlet extends HttpServlet {
         // Output
         OutputStream output = response.getOutputStream();
         try {
+            
             // Request parameters
             String index = request.getParameter("index");
             String pictureContent = request.getParameter("content");
@@ -263,7 +264,7 @@ public class BinaryServlet extends HttpServlet {
             String webToken = request.getParameter("webToken");  
             if (webToken != null) {
             	
-            	ITokenService tokenService = Locator.findMBean(ITokenService.class, ITokenService.MBEAN_NAME);
+            	ITokenService tokenService = Locator.getService(ITokenService.MBEAN_NAME,ITokenService.class );
             	Map<String,String> tokenDatas = tokenService.validateToken(webToken);
             	if( tokenDatas != null)    {
                     String uid = tokenDatas.get("uid");
@@ -353,11 +354,12 @@ public class BinaryServlet extends HttpServlet {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 request.setAttribute("osivia.no_redirection", "1");
             } else if (e.getErrorCode() == NuxeoException.ERROR_UNAVAILAIBLE) {
-                response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-                request.setAttribute("osivia.no_redirection", "1");
-            }
+                throw e;
+             }
         } catch (Exception e) {
-            throw new ServletException(e);
+            log.error(Debug.stackTraceToString( e ));
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            request.setAttribute("osivia.no_redirection", "1");
         } finally {
             IOUtils.closeQuietly(output);
         }

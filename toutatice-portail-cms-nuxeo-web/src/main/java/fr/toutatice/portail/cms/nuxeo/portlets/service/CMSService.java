@@ -66,7 +66,6 @@ import org.osivia.portal.api.cms.*;
 import org.osivia.portal.api.cms.exception.DocumentForbiddenException;
 import org.osivia.portal.api.cms.exception.DocumentNotFoundException;
 import org.osivia.portal.api.cms.service.CMSSession;
-import org.osivia.portal.api.cms.service.UpdateInformations;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.directory.v2.DirServiceFactory;
 import org.osivia.portal.api.directory.v2.model.Group;
@@ -3787,6 +3786,12 @@ public class CMSService implements ICMSService {
         } catch (Exception e) {
             throw new CMSException(e);
         }
+    }
+
+
+    @Override
+    public PortletContext getPortletContext() throws CMSException {
+        return portletCtx;
     }
     
 
