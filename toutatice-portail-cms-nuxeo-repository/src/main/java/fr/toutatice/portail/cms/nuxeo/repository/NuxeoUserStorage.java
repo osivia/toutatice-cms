@@ -272,5 +272,11 @@ public class NuxeoUserStorage extends BaseUserStorage {
        
     }
 
+    @Override
+    public void handleError() {
+    }
+
+
+
 
 }
