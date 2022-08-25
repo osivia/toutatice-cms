@@ -36,6 +36,7 @@ import org.nuxeo.ecm.automation.client.jaxrs.spi.marshallers.BooleanMarshaller;
 import org.nuxeo.ecm.automation.client.jaxrs.spi.marshallers.DateMarshaller;
 import org.nuxeo.ecm.automation.client.jaxrs.spi.marshallers.DocumentMarshaller;
 import org.nuxeo.ecm.automation.client.jaxrs.spi.marshallers.DocumentsMarshaller;
+import org.nuxeo.ecm.automation.client.jaxrs.spi.marshallers.EsMarshaller;
 import org.nuxeo.ecm.automation.client.jaxrs.spi.marshallers.ExceptionMarshaller;
 import org.nuxeo.ecm.automation.client.jaxrs.spi.marshallers.LoginMarshaller;
 import org.nuxeo.ecm.automation.client.jaxrs.spi.marshallers.NumberMarshaller;
@@ -181,6 +182,7 @@ public class JsonMarshalling {
         addMarshaller(new BooleanMarshaller());
         addMarshaller(new NumberMarshaller());
         addMarshaller(new DateMarshaller());
+        addMarshaller(new EsMarshaller());
     }
 
     public static void addMarshaller(JsonMarshaller<?> marshaller) {
