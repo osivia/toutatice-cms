@@ -212,8 +212,6 @@ public class TransformationFunctions {
             Map<String, String> properties = new HashMap<String, String>();
             properties.put(InternalConstants.PROP_WINDOW_TITLE, displayName);
             properties.put("osivia.hideTitle", "1");
-            properties.put("osivia.ajaxLink", "1");
-            properties.put(DynaRenderOptions.PARTIAL_REFRESH_ENABLED, String.valueOf(true));
             properties.put("uidFichePersonne", user);
 
             // Page parameters

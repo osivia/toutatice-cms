@@ -51,8 +51,6 @@ public class DefaultPlayer implements INuxeoPlayerModule {
         NuxeoPublicationInfos publicationInfos = documentContext.getPublicationInfos();
 
 		Map<String, String> windowProperties = new HashMap<String, String>();
-        windowProperties.put(DynaRenderOptions.PARTIAL_REFRESH_ENABLED, String.valueOf(true));
-        windowProperties.put("osivia.ajaxLink", "1");
         windowProperties.put(Constants.WINDOW_PROP_VERSION, documentContext.getDocumentState().toString());
         windowProperties.put(Constants.WINDOW_PROP_URI, publicationInfos.getPath());
         windowProperties.put("osivia.cms.publishPathAlreadyConverted", "1");

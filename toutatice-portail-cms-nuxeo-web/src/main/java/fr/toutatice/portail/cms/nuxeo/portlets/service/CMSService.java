@@ -3466,8 +3466,6 @@ public class CMSService implements ICMSService {
                         applicationProperties.put("osivia.services.procedure.uuid", document.getId());
                         applicationProperties.put("osivia.doctype", document.getType());
                         applicationProperties.put("osivia.hideDecorators", "1");
-                        applicationProperties.put(DynaRenderOptions.PARTIAL_REFRESH_ENABLED, Constants.PORTLET_VALUE_ACTIVATE);
-                        applicationProperties.put("osivia.ajaxLink", "1");
                         applicationProperties.put(Constants.WINDOW_PROP_VERSION, "1");
 
                         applicationProperties.put("osivia.title", name);

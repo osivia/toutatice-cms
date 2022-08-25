@@ -554,7 +554,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         windowProperties.put(Constants.WINDOW_PROP_URI, document.getPath());
         windowProperties.put("osivia.cms.publishPathAlreadyConverted", "1");
         windowProperties.put("osivia.hideDecorators", "1");
-        windowProperties.put("osivia.ajaxLink", "1");
 
         Player linkProps = new Player();
         linkProps.setWindowProperties(windowProperties);

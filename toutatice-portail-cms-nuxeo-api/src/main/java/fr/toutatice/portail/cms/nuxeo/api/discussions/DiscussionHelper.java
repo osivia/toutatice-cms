@@ -72,9 +72,8 @@ public class DiscussionHelper {
 
         Map<String, String> properties = new HashMap<>();
 
-        properties.put("osivia.ajaxLink", "1");
         properties.put("osivia.hideTitle", "1");
-        properties.put(DynaRenderOptions.PARTIAL_REFRESH_ENABLED, String.valueOf(true));
+
         Map<String, String> params = new HashMap<>();
         params.put("view", "detail");
         if( id != null)

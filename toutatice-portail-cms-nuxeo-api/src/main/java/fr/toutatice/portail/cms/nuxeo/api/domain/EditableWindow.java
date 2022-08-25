@@ -119,7 +119,6 @@ public abstract class EditableWindow {
         propsFilled.put("osivia.title", fragment.getString("title"));
         propsFilled.put("osivia.style", fragment.getString("style"));
 
-        propsFilled.put("osivia.ajaxLink", "1");
         propsFilled.put("osivia.hideDecorators", "1");
         propsFilled.put("osivia.hideEmptyPortlet", "1");
         
