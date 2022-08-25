@@ -184,7 +184,7 @@ public class BrowserAdapter {
         List<CMSItem> workspaces;
         try {
             String liveStatus = RequestPublishStatus.live.getStatus();
-            INuxeoCommand nuxeoCommand = new ListCommand(query, liveStatus, 0, -1, schemas, filter);
+            INuxeoCommand nuxeoCommand = new ListCommand(query, liveStatus, 0, 100, schemas, filter);
             Documents documents = (Documents) this.cmsService.executeNuxeoCommand(cmsContext, nuxeoCommand);
 
             workspaces = new ArrayList<CMSItem>(documents.size());
