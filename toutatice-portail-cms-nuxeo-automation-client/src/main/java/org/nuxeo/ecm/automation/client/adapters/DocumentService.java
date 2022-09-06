@@ -312,7 +312,18 @@ public class DocumentService {
      */
     @Deprecated
     public Document update(DocRef doc, PropertyMap properties) throws IOException {
-        return (Document) session.newRequest(UpdateDocument).setInput(doc).set("properties", properties).execute();
+        return this.update(doc, properties, false);
+    }
+
+    @Deprecated
+    public Document update(DocRef doc, PropertyMap properties, boolean synchronizedIndexing) throws IOException {
+        OperationRequest request = this.session.newRequest(UpdateDocument);
+        request.setInput(doc);
+        request.set("properties", properties);
+        if (synchronizedIndexing) {
+            request.setHeader(ES_SYNC_FLAG, String.valueOf(true));
+        }
+        return (Document) request.execute();
     }
 
     public Document publish(DocRef doc, DocRef section) throws IOException {
