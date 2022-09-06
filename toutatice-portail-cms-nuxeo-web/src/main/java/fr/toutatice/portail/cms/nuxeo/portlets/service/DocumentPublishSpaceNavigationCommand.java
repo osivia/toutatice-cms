@@ -130,6 +130,8 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
         StringBuilder clause = new StringBuilder();
         clause.append("(ecm:path STARTSWITH '");
         clause.append(basePath);
+        clause.append("' OR ecm:path = '");
+        clause.append(basePath);
         if (!this.live) {
             clause.append("' OR ecm:path = '");
             clause.append(basePath);
@@ -266,6 +268,8 @@ public class DocumentPublishSpaceNavigationCommand implements INuxeoCommand {
             }
 
             extendedClause.append("ecm:path STARTSWITH '");
+            extendedClause.append(extraPath);
+            extendedClause.append("' OR ecm:path = '");
             extendedClause.append(extraPath);
             extendedClause.append("'");
         }
