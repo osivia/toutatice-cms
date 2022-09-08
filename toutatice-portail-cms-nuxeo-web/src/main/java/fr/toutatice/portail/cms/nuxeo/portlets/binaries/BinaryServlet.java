@@ -312,6 +312,9 @@ public class BinaryServlet extends HttpServlet {
             }
 
         } catch (NuxeoException e) {
+
+            log.error(e);
+
             if (e.getErrorCode() == NuxeoException.ERROR_NOTFOUND) {
                 String message = "Resource BinaryServlet " + request.getParameterMap() + " not found (error 404).";
                 this.log.error(message);

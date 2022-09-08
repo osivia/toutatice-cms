@@ -104,6 +104,10 @@ public class DefaultSession implements Session {
         }
         req.put("Accept", REQUEST_ACCEPT_HEADER);
         req.put("Content-Type", ctype);
+
+        // All modifications are synchronized in elasticsearch
+        req.put("nx-es-sync","true");
+
         if (req.get(HEADER_NX_SCHEMAS) == null && defaultSchemas != null) {
             req.put(HEADER_NX_SCHEMAS, defaultSchemas);
         }
