@@ -44,7 +44,7 @@ public interface INuxeoService extends ICMSIntegration {
 	 * @return the session
 	 * @throws Exception the exception
 	 */
-    Session createUserSession(Satellite satellite, String userId) throws Exception;
+    Session createUserSession(Satellite satellite, String userId, String repositoryName) throws Exception;
 
     /**
      * Start nuxeo command service.

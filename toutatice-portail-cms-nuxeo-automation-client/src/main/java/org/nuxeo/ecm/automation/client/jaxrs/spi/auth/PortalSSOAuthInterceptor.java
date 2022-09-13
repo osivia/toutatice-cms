@@ -30,12 +30,20 @@ public class PortalSSOAuthInterceptor implements RequestInterceptor {
 
     protected final String secret;
     protected final String username;
+    protected final String repositoryName;
 
 
     public PortalSSOAuthInterceptor(String secretKey, String userName) {
         this.secret = secretKey;
         this.username = userName;
+        this.repositoryName = null;
     }
+    
+    public PortalSSOAuthInterceptor(String secretKey, String userName, String repositoryName) {
+        this.secret = secretKey;
+        this.username = userName;
+        this.repositoryName = repositoryName;
+    }    
 
     @Override
     public void processRequest(Request request, Connector connector) {
@@ -62,6 +70,11 @@ public class PortalSSOAuthInterceptor implements RequestInterceptor {
         request.put("NX_RD", String.valueOf(random));
         request.put("NX_TOKEN", base64HashedToken);
         request.put("NX_USER", username);
+        
+        if(repositoryName != null) {
+        	request.put("X-NXRepository", repositoryName);	
+        }
+        	
 
 
     }

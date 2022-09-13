@@ -67,6 +67,9 @@ public class NuxeoCommandContext {
     
     /** Nuxeo Satellite Name **/
     private Satellite satellite;
+    
+    /** Alternative repository name */
+    private String repositoryName;
 
 
 	/**
@@ -391,5 +394,23 @@ public class NuxeoCommandContext {
     public void setAsynchronousCommand(boolean asynchronousCommand) {
         this.asynchronousCommand = asynchronousCommand;
     }
+
+    /**
+     * 
+     * @return
+     */
+	public String getRepositoryName() {
+		return repositoryName;
+	}
+
+	/**
+	 * 
+	 * @param repositoryName
+	 */
+	public void setRepositoryName(String repositoryName) {
+		this.repositoryName = repositoryName;
+	}
+    
+    
 
 }
