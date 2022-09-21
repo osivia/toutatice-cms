@@ -24,11 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.jaxrs.spi.StreamedSession;
-import org.nuxeo.ecm.automation.client.model.Document;
-import org.nuxeo.ecm.automation.client.model.FileBlob;
-import org.nuxeo.ecm.automation.client.model.PropertyList;
-import org.nuxeo.ecm.automation.client.model.PropertyMap;
-import org.nuxeo.ecm.automation.client.model.StreamBlob;
+import org.nuxeo.ecm.automation.client.model.*;
 import org.osivia.portal.core.cms.CMSBinaryContent;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
@@ -129,7 +125,8 @@ public class FileContentCommand implements INuxeoCommand {
                     url = session.getClient().getBaseUrl() + pathFile;
                 }
 
-                StreamBlob blob = (StreamBlob) ((StreamedSession) session).getStreamedFile(url);
+                StreamedSession streamedSession = (StreamedSession) session;
+                Blob blob = streamedSession.getStreamedFile(url);
 
                 CMSBinaryContent content = new CMSBinaryContent();
 

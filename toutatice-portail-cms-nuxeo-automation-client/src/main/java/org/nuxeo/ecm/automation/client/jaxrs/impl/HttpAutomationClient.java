@@ -23,12 +23,15 @@ import org.apache.http.HttpHost;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.nuxeo.ecm.automation.client.LoginInfo;
+import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.adapters.AsyncSessionFactory;
 import org.nuxeo.ecm.automation.client.adapters.BusinessServiceFactory;
 import org.nuxeo.ecm.automation.client.adapters.DocumentSecurityServiceFactory;
 import org.nuxeo.ecm.automation.client.adapters.DocumentServiceFactory;
 import org.nuxeo.ecm.automation.client.jaxrs.spi.AsyncAutomationClient;
 import org.nuxeo.ecm.automation.client.jaxrs.spi.Connector;
+import org.nuxeo.ecm.automation.client.jaxrs.spi.StreamedSession;
 import org.nuxeo.ecm.automation.client.rest.api.RestClient;
 
 import java.util.function.Supplier;
@@ -108,10 +111,21 @@ public class HttpAutomationClient extends AsyncAutomationClient {
     }
 
     @Override
+    protected Session createSession(Connector connector, LoginInfo login) {
+        LogFactory.getLog(this.getClass()).info("CREATE SESSION");
+
+        return new StreamedSession(this, connector, login == null ? LoginInfo.ANONYNMOUS : login);
+    }
+
+    @Override
     public synchronized void shutdown() {
         super.shutdown();
-        http.getConnectionManager().shutdown();
-        http = null;
+        if (this.http != null) {
+            if (this.http.getConnectionManager() != null) {
+                this.http.getConnectionManager().shutdown();
+            }
+        }
+        this.http = null;
     }
 
     @Override
