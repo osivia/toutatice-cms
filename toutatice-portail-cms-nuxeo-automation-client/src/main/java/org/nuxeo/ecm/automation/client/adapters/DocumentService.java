@@ -45,7 +45,7 @@ public class DocumentService {
 
     public static final String FetchDocument = "Repository.GetDocument";
 
-    public static final String CreateDocument = "Document.Create";
+    public static final String CreateDocument = "Document.TTCCreate";
 
     public static final String DeleteDocument = "Document.Delete";
 
