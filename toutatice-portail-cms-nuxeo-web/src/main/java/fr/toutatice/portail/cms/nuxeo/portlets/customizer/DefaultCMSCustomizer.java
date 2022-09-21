@@ -2022,7 +2022,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         // Search
         TaskbarItem search = factory.createStapledTaskbarItem(ITaskbarService.SEARCH_TASK_ID, "SEARCH_TASK", "glyphicons glyphicons-search",
-                new UniversalID( "idx", "DEFAULT_TEMPLATES_WORKSPACE_SEARCH"));
+                new UniversalID( System.getProperty("osivia.repository.default"), "DEFAULT_TEMPLATES_WORKSPACE_SEARCH"));
         factory.hide(search, true);
         taskbarItems.add(search);
 

@@ -18,6 +18,7 @@ import org.osivia.portal.api.cms.exception.DocumentNotFoundException;
 import org.osivia.portal.api.cms.model.Document;
 import org.osivia.portal.api.cms.model.NavigationItem;
 import org.osivia.portal.api.cms.repository.BaseUserRepository;
+import org.osivia.portal.api.cms.repository.RepositoryFactory;
 import org.osivia.portal.api.cms.repository.cache.SharedRepository;
 import org.osivia.portal.api.cms.repository.cache.SharedRepositoryKey;
 import org.osivia.portal.api.cms.service.GetChildrenRequest;
@@ -71,8 +72,8 @@ public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepo
         return this.nuxeoService;
     }
 
-    public NuxeoRepositoryImpl(SharedRepositoryKey repositoryKey, BaseUserRepository publishRepository, String userName) {
-        super(repositoryKey, publishRepository, userName, new NuxeoUserStorage());
+    public NuxeoRepositoryImpl(RepositoryFactory repositoryFactory, SharedRepositoryKey repositoryKey, BaseUserRepository publishRepository, String userName) {
+        super(repositoryFactory, repositoryKey, publishRepository, userName, new NuxeoUserStorage());
 
         // CMS service locator
         this.cmsServiceLocator = Locator.findMBean(ICMSServiceLocator.class, ICMSServiceLocator.MBEAN_NAME);
