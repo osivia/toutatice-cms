@@ -112,8 +112,6 @@ public class HttpAutomationClient extends AsyncAutomationClient {
 
     @Override
     protected Session createSession(Connector connector, LoginInfo login) {
-        LogFactory.getLog(this.getClass()).info("CREATE SESSION");
-
         return new StreamedSession(this, connector, login == null ? LoginInfo.ANONYNMOUS : login);
     }
 
