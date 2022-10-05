@@ -515,7 +515,7 @@ public class CMSService implements ICMSService {
                 
                 Document document;
                 
-                if (haveToGetLive && Satellite.MAIN.equals(satellite) && !(path.startsWith("/task-root/"))) {
+                if (Satellite.MAIN.equals(satellite) && !(path.startsWith("/task-root/"))) {
                     document = fetchContentByConnect(cmsContext, path);
                 } else {
 

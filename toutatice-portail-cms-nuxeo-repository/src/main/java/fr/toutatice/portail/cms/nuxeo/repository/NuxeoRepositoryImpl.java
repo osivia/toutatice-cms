@@ -2,6 +2,7 @@ package fr.toutatice.portail.cms.nuxeo.repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.portlet.PortletContext;
 
@@ -17,10 +18,13 @@ import org.osivia.portal.api.cms.exception.CMSException;
 import org.osivia.portal.api.cms.exception.DocumentNotFoundException;
 import org.osivia.portal.api.cms.model.Document;
 import org.osivia.portal.api.cms.model.NavigationItem;
+import org.osivia.portal.api.cms.model.Profile;
 import org.osivia.portal.api.cms.repository.BaseUserRepository;
 import org.osivia.portal.api.cms.repository.RepositoryFactory;
+import org.osivia.portal.api.cms.repository.UserStorage;
 import org.osivia.portal.api.cms.repository.cache.SharedRepository;
 import org.osivia.portal.api.cms.repository.cache.SharedRepositoryKey;
+import org.osivia.portal.api.cms.repository.model.shared.RepositoryDocument;
 import org.osivia.portal.api.cms.service.GetChildrenRequest;
 import org.osivia.portal.api.cms.service.Request;
 import org.osivia.portal.api.cms.service.Result;
@@ -40,10 +44,11 @@ import org.osivia.portal.core.web.IWebIdService;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
+import fr.toutatice.portail.cms.producers.test.AdvancedRepository;
 
 
 
-public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepository {
+public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepository, AdvancedRepository {
 
 
     private INuxeoService nuxeoService;
@@ -72,6 +77,12 @@ public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepo
         return this.nuxeoService;
     }
 
+    @Override
+    public NuxeoUserStorage getUserStorage() {
+
+        return (NuxeoUserStorage) super.getUserStorage();
+    }
+
     public NuxeoRepositoryImpl(RepositoryFactory repositoryFactory, SharedRepositoryKey repositoryKey, BaseUserRepository publishRepository, String userName) {
         super(repositoryFactory, repositoryKey, publishRepository, userName, new NuxeoUserStorage());
 
@@ -97,7 +108,7 @@ public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepo
 
     @Override
     public boolean supportPreview() {
-        return false;
+        return true;
     }
 
     @Override
@@ -315,6 +326,8 @@ public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepo
     private CMSServiceCtx getNavigationCMSContext() {
         CMSServiceCtx cmsContext = new CMSServiceCtx();
         cmsContext.setPortalControllerContext(getPortalContext());
+        if( isPreviewRepository())
+            cmsContext.setDisplayLiveVersion("1");
         return cmsContext;
     }
 
@@ -455,6 +468,129 @@ public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepo
     @Override
     public void publish(String id) throws CMSException {
 
+    }
+
+
+
+    @Override
+    public void addWindow(String id, String name, String portletName, String region, int position, String pageId, Map<String, String> properties) throws CMSException {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+
+    @Override
+    public void addDocument(String id, String type,  String name, String parentId) throws CMSException {
+      getUserStorage().addDocument(id, type, name, batchMode);
+      
+      if(!batchMode)  {        
+          RepositoryDocument doc = (RepositoryDocument) getDocument(id);
+          UpdateInformations infos = new UpdateInformations(new UniversalID(getRepositoryName(), id), doc.getSpaceId(), UpdateScope.SCOPE_SPACE, false);
+          getSharedRepository().notifyUpdate( getUserStorage(), infos);
+      }  
+        
+    }
+
+    @Override
+    public void unpublish(String id) throws CMSException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public boolean supportPageEdition() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public List<Document> getChildren(String id) throws CMSException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void setACL(String id, List<String> acls) throws CMSException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public List<String> getACL(String id) throws CMSException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void deleteDocument(String id) throws CMSException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void renameDocument(String id, String title) throws CMSException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void moveDocument(String srcId, String beforedestId, boolean endOfList) throws CMSException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void reloadDatas() {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void addDocument(String internalID, RepositoryDocument document) throws CMSException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void updateDocument(String internalID, RepositoryDocument document) throws CMSException {
+       getUserStorage().updateDocument(internalID, document, batchMode);
+       
+       if(!batchMode)  {        
+           UpdateInformations infos = new UpdateInformations(new UniversalID(getRepositoryName(), internalID), document.getSpaceId(), UpdateScope.SCOPE_SPACE, false);
+           getSharedRepository().notifyUpdate( getUserStorage(), infos);
+       }    
+        
+    }
+
+    @Override
+    public void setNewId(String internalID, String newId) throws CMSException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void setProfiles(String id, List<Profile> profiles) throws CMSException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void setStyles(String id, List<String> styles) throws CMSException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void setTemplateId(String id, UniversalID templateID) throws CMSException {
+        RepositoryDocument doc = (RepositoryDocument) getDocument(id);
+        if( templateID != null)
+            doc.getProperties().put("ttc:pageTemplate", templateID.toString());
+        else
+            doc.getProperties().remove("ttc:pageTemplate");
+        
+        updateDocument(id, doc);
+        
     }
 
 }

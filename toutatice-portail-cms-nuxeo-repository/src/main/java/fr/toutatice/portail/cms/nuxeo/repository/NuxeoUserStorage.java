@@ -7,6 +7,7 @@ import java.util.Map;
 
 import javax.portlet.PortletContext;
 
+import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.Session;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.cache.services.CacheInfo;
@@ -122,7 +123,14 @@ public class NuxeoUserStorage extends BaseUserStorage {
 //               System.out.println("**** RELOAD "+ internalID+ " " + docPubInfos.getDocumentPath());
            
            
-           Document nxDocument = fetchDocument(docPubInfos.getDocumentPath(), docPubInfos.isPublished(), false);
+           boolean getPublishedVersion;
+           
+           if( getUserRepository().isPreviewRepository())
+               getPublishedVersion = false;
+           else
+               getPublishedVersion = docPubInfos.isPublished();
+           
+           Document nxDocument = fetchDocument(docPubInfos.getDocumentPath(), getPublishedVersion, false);
             
             Map<String, Object> properties = new HashMap<String, Object>();
             for (String key : nxDocument.getProperties().getKeys()) {
@@ -142,10 +150,21 @@ public class NuxeoUserStorage extends BaseUserStorage {
             
             RepositoryDocument document;
             if( "Workspace".equals(nxDocument.getType()) || "PortalSite".equals(nxDocument.getType()))  {
-                if( "Workspace".equals(nxDocument.getType()) )
+                if( "Workspace".equals(nxDocument.getType()) )  {
                     properties.put("osivia.connect.templated", "false");
+                    properties.put("osivia.connect.liveSpace", Boolean.TRUE);
+                }
+                String sTemplate = (String) properties.get("ttc:pageTemplate");
+                
+                UniversalID templateID;
+                
+                if(StringUtils.isNotEmpty(sTemplate)) {
+                    templateID = new UniversalID( sTemplate);
+                }   else
+                    templateID = null;
+                
                 document= new RepositorySpace(getUserRepository(), nxDocument, internalID,
-                        nxDocument.getPath().substring(nxDocument.getPath().lastIndexOf('/') + 1), null, spaceId, null, properties, null);      
+                        nxDocument.getPath().substring(nxDocument.getPath().lastIndexOf('/') + 1), null, internalID, null, properties, templateID);      
             }
             else
                 document= new RepositoryDocument(getUserRepository(), nxDocument, internalID,
@@ -249,14 +268,18 @@ public class NuxeoUserStorage extends BaseUserStorage {
 
     }
 
-    @Override
-    public void addDocument(String internalID, RepositoryDocument document, boolean batchMode) {
-         
+
+    public void addDocument(String internalID, String type, String name,  boolean batchMode)  throws CMSException {
+         if( "space".equals(type))  {
+             executeCommand(createCommandContext(false, true),
+                     new PublishSpaceCreationCommand(internalID)).getResult();
+         }
     }
 
-    @Override
-    public void updateDocument(String internalID, RepositoryDocument document, boolean batchMode) {
-        
+
+    public void updateDocument(String internalID, RepositoryDocument document, boolean batchMode)   throws CMSException {
+        executeCommand(createCommandContext(false, true),
+                new UpdateDocumentCommand(document)).getResult();
     }
 
     @Override
@@ -267,7 +290,7 @@ public class NuxeoUserStorage extends BaseUserStorage {
     public void beginBatch() {
     }
 
-    @Override
+
     public void deleteDocument(String internalID, boolean batchMode) throws CMSException {
        
     }
