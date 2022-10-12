@@ -18,6 +18,8 @@
  */
 package org.nuxeo.ecm.automation.client.model;
 
+import org.apache.commons.lang3.time.DateFormatUtils;
+
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Date;
@@ -152,7 +154,13 @@ public class PropertyMap implements Serializable {
 
     @Deprecated
     public void set(String key, Object value) {
-        this.map.put(key, value);
+        if (value instanceof Boolean || value instanceof Integer || value instanceof Long || value instanceof Double) {
+            this.map.put(key, value.toString());
+        } else if (value instanceof Date) {
+            this.map.put(key, DateUtils.formatDate((Date) value));
+        } else {
+            this.map.put(key, value);
+        }
     }
 
     @Deprecated
