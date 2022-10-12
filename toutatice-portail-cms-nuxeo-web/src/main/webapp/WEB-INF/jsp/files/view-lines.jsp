@@ -156,7 +156,7 @@
                                 <c:if test="${empty date}">
                                     <c:set var="date" value="${document.properties['dc:created']}" />
                                 </c:if>
-                                <c:set var="size" value="${document.properties['common:size']}" />
+                                <c:set var="size" value="${document.properties['file:content']['length']}" />
                                 <c:choose>
                                     <c:when test="${'Picture' eq document.type.name}"><c:set var="downloadUrl"><ttc:documentLink document="${document}" picture="true" /></c:set></c:when>
                                     <c:when test="${document.type.file}"><c:set var="downloadUrl"><ttc:documentLink document="${document}" displayContext="download" /></c:set></c:when>

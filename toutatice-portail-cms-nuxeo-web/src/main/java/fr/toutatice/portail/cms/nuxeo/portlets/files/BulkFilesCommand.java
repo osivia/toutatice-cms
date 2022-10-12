@@ -20,6 +20,7 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.io.output.CountingOutputStream;
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.Session;
+import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.core.cms.CMSBinaryContent;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
@@ -44,7 +45,7 @@ public class BulkFilesCommand implements INuxeoCommand {
     private static final String FILE_FIELD_NAME = "file:content";
 
     /** SIZE_FIELD */
-    private static final String SIZE_FIELD = "common:size";
+    private static final String SIZE_FIELD = "length";
 
     /** DEFAULT_FILENAME */
     private static final String DEFAULT_FILENAME = "export.zip";
@@ -74,7 +75,13 @@ public class BulkFilesCommand implements INuxeoCommand {
         long sizeSum = 0;
         for (String path : this.paths) {
             documentContext = nuxeoController.getDocumentContext(path);
-            Long fileSize = documentContext.getDocument().getLong(SIZE_FIELD);
+            PropertyMap fileContent = documentContext.getDocument().getProperties().getMap(FILE_FIELD_NAME);
+            Long fileSize;
+            if (fileContent == null) {
+                fileSize = null;
+            } else {
+                fileSize = fileContent.getLong(SIZE_FIELD);
+            }
             if (fileSize == null) {
                 throw new NuxeoException(NuxeoException.ERROR_UNAVAILAIBLE);
             }
