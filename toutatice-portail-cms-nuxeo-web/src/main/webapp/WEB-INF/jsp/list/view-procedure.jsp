@@ -120,7 +120,7 @@
                                 <c:when test="${variableType eq 'PICTURE'}">
                                     <c:set var="variableValue">
                                         <a href="${variableValue.url}" class="thumbnail no-margin-bottom no-ajax-link" data-fancybox="gallery" data-caption="${variableValue.name}" data-type="image">
-                                            <img src="${variableValue.url}" alt="${variableValue.name}" class="vignette img-responsive" data-error-message="${imageErrorMessage}">
+                                            <img src="${variableValue.url}" alt="${variableValue.name}" class="vignette img-fluid" data-error-message="${imageErrorMessage}">
                                         </a>
                                     </c:set>
                                 </c:when>

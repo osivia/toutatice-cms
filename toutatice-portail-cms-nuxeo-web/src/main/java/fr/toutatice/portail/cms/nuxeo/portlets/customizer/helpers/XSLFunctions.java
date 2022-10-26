@@ -32,11 +32,14 @@ import javax.portlet.WindowStateException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jboss.portal.core.model.portal.Portal;
+import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.locator.Locator;
+import org.osivia.portal.api.portalobject.bridge.PortalObjectUtils;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.page.PageProperties;
@@ -293,9 +296,11 @@ public class XSLFunctions {
                     }
 
                     if ("dynamicPage".equals(params.get("type"))) {
-                        String portalName = "/" + PageProperties.getProperties().getPagePropertiesMap().get(Constants.PORTAL_NAME);
-
+                        Portal portal = PortalObjectUtils.getPortal(portalControllerContext);
+                        
+                        // Compatibility
                         String templatePath = params.get("templatePath");
+                                	
                         String pageName = params.get("pageName");
                         if (pageName == null) {
                             pageName = "genericDynamicWindow";
@@ -304,7 +309,7 @@ public class XSLFunctions {
                         Map<String, String> dynaProps = new HashMap<String, String>();
                         Map<String, String> dynaParams = new HashMap<String, String>();
 
-                        String dynamicUrl = this.portalURLFactory.getStartPageUrl(this.portalControllerContext, portalName, pageName, templatePath, dynaProps,
+                        String dynamicUrl = this.portalURLFactory.getStartPageUrl(this.portalControllerContext, portal.getId().toString(PortalObjectPath.CANONICAL_FORMAT), pageName, templatePath, dynaProps,
                                 dynaParams);
                         return dynamicUrl;
                     }

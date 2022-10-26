@@ -92,7 +92,7 @@
                             >
                                 <span class="img-container">
                                     <c:choose>
-                                        <c:when test="${not empty vignetteUrl}"><img src="${vignetteUrl}" alt="" class="img-responsive text-middle"></c:when>
+                                        <c:when test="${not empty vignetteUrl}"><img src="${vignetteUrl}" alt="" class="img-fluid text-middle"></c:when>
                                         <c:otherwise><i class="${icon}"></i></c:otherwise>
                                     </c:choose>
                                 </span>

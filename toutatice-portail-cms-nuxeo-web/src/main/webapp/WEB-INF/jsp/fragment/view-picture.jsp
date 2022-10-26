@@ -6,7 +6,7 @@
 <div>
     <c:choose>
         <c:when test="${empty link}">
-            <img src="${imageSource}" alt="" class="img-responsive">
+            <img src="${imageSource}" alt="" class="img-fluid">
         </c:when>
         
         <c:otherwise>
