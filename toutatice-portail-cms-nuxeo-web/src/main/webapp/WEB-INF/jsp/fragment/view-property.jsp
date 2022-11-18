@@ -1,4 +1,4 @@
 <%@ page isELIgnored="false" %>
 
 
-<div class="no-ajax-link">${content}</div>
+<div>${content}</div>

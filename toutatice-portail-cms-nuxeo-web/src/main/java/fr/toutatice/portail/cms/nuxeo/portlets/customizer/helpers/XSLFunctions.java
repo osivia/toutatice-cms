@@ -16,6 +16,7 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,7 @@ import org.jboss.portal.core.model.portal.PortalObjectPath;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.PortalException;
+import org.osivia.portal.api.cms.UniversalID;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.portalobject.bridge.PortalObjectUtils;
@@ -300,18 +302,23 @@ public class XSLFunctions {
                         
                         // Compatibility
                         String templatePath = params.get("templatePath");
-                                	
-                        String pageName = params.get("pageName");
-                        if (pageName == null) {
-                            pageName = "genericDynamicWindow";
+                        
+                        if( templatePath.startsWith("/"))	{
+                         	List<String> hierarchy = Arrays.asList(templatePath.split("/"));
+                        	 String ID = "";
+                             for (String curHierarchy : hierarchy) {
+                            	 if( ID.length() > 0)
+                            		 ID+= "_";
+                            	 ID += curHierarchy.toUpperCase();
+                            	 
+                             }
+                             
+                             String url = portalURLFactory.getViewContentUrl(portalControllerContext, new UniversalID(portal.getId().getNamespace(), ID));
+                             
+                             return url;
                         }
-
-                        Map<String, String> dynaProps = new HashMap<String, String>();
-                        Map<String, String> dynaParams = new HashMap<String, String>();
-
-                        String dynamicUrl = this.portalURLFactory.getStartPageUrl(this.portalControllerContext, portal.getId().toString(PortalObjectPath.CANONICAL_FORMAT), pageName, templatePath, dynaProps,
-                                dynaParams);
-                        return dynamicUrl;
+                        
+                        
                     }
                 } else {
                     // Autres liens portails
