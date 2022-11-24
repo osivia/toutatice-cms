@@ -74,7 +74,7 @@
                 
                 <li>
                     <a href="${startUrl}">
-                        <i class="halflings halflings-step-backward"></i>
+                        <i class="glyphicons glyphicons-skip-to-end"></i>
                     </a>
                 </li>
             </c:if>
@@ -82,7 +82,7 @@
             <!-- Left -->
             <li class="${leftClass}">
                 <a href="${leftUrl}">
-                    <i class="halflings halflings-triangle-left"></i>
+                    <i class="glyphicons glyphicons-rewind"></i>
                 </a>
             </li>
         
@@ -117,7 +117,7 @@
             <!-- Right -->
             <li class="${rightClass}">
                 <a href="${rightUrl}">
-                    <i class="halflings halflings-triangle-right"></i>
+                    <i class="glyphicons glyphicons-forward"></i>
                 </a>
             </li>
         </ul>
