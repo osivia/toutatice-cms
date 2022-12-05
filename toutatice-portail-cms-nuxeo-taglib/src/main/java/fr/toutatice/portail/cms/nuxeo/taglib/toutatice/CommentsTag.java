@@ -217,7 +217,7 @@ public class CommentsTag extends ToutaticeSimpleTag {
 
 
         // Container
-        Element container = DOM4JUtils.generateDivElement("hidden");
+        Element container = DOM4JUtils.generateDivElement("d-none");
 
         // Fancybox container
         Element fancyboxContainer = DOM4JUtils.generateDivElement("container-fluid");
@@ -249,12 +249,12 @@ public class CommentsTag extends ToutaticeSimpleTag {
         formGroup.add(buttonsContainer);
 
         // Submit
-        Element submit = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-warning", bundle.getString("YES"), "halflings halflings-alert", null);
+        Element submit = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-warning", bundle.getString("YES"), "glyphicons glyphicons-basic-triangle-alert", null);
         DOM4JUtils.addAttribute(submit, HTMLConstants.TYPE, HTMLConstants.INPUT_TYPE_SUBMIT);
         buttonsContainer.add(submit);
 
         // Cancel
-        Element cancel = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-default", bundle.getString("NO"));
+        Element cancel = DOM4JUtils.generateElement(HTMLConstants.BUTTON, "btn btn-outline-secondary", bundle.getString("NO"));
         DOM4JUtils.addAttribute(cancel, HTMLConstants.TYPE, HTMLConstants.INPUT_TYPE_BUTTON);
         DOM4JUtils.addAttribute(cancel, HTMLConstants.ONCLICK, "closeFancybox()");
         buttonsContainer.add(cancel);

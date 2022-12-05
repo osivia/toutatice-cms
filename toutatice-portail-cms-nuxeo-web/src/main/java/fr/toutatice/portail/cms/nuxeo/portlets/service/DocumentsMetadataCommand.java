@@ -2,6 +2,7 @@ package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -76,7 +77,7 @@ public class DocumentsMetadataCommand implements INuxeoCommand {
         // Symlinks
         List<Symlink> symlinks;
         if (this.symlinks == null) {
-            symlinks = null;
+            symlinks = new ArrayList<>(0);
         } else {
             symlinks = this.symlinks.getLinks();
         }
