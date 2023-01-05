@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import javax.servlet.jsp.JspException;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
 import org.dom4j.io.HTMLWriter;
@@ -61,6 +62,8 @@ public class TitleTag extends ToutaticeSimpleTag {
     protected void doTag(NuxeoController nuxeoController, DocumentDTO document) throws JspException, IOException {
         // Title
         String title = StringUtils.defaultIfEmpty(StringUtils.trim(document.getTitle()), document.getId());
+        // Escape HTML
+        title = StringEscapeUtils.escapeHtml(title);
         // Icon
         String icon;
         if (this.icon && (document.getType() != null)) {

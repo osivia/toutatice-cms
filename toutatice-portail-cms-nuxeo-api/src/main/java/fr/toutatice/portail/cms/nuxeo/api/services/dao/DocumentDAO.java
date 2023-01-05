@@ -14,17 +14,14 @@
 package fr.toutatice.portail.cms.nuxeo.api.services.dao;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.activation.MimeType;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.PropertyList;
@@ -64,6 +61,11 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
     /** Nuxeo date regex pattern. */
     private final Pattern datePattern;
 
+    /**
+     * Unescaped properties.
+     */
+    private final Set<String> unescapedProperties;
+
 
     /**
      * Private constructor.
@@ -76,6 +78,10 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
 
         // Nuxeo date regex pattern
         this.datePattern = Pattern.compile(NUXEO_DATE_REGEX);
+
+        // Unescaped properties
+        // TODO extension point
+        this.unescapedProperties = new HashSet<>(Arrays.asList("annonce:resume", "note:note", "ttcth:message", "webp:content"));
     }
 
 
@@ -110,8 +116,8 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
 
         // Identifier
         dto.setId(document.getId());
-        // Title
-        dto.setTitle(document.getTitle());
+        // Title: escape HTML
+        dto.setTitle(StringEscapeUtils.escapeHtml(document.getTitle()));
         // Path
         dto.setPath(document.getPath());
         // Type
@@ -209,7 +215,12 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
                 if (dateMatcher.matches()) {
                     Date date = propertyMap.getDate(key);
                     map.put(key, date);
+                } else if (this.unescapedProperties.contains(key)) {
+                    map.put(key, stringValue);
                 } else {
+                    // Escape HTML
+                    stringValue = StringEscapeUtils.escapeHtml(stringValue);
+
                     map.put(key, stringValue);
                 }
             } else {
@@ -315,7 +326,7 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
 
     /**
      * Get icon from mime type.
-     * 
+     *
      * @param mimeType mime type
      * @return icon, may be null
      */
@@ -364,14 +375,14 @@ public final class DocumentDAO implements IDAO<Document, DocumentDTO> {
                 PropertyMap file = map.getMap("file");
 
                 // Attachment name
-                
+
                 // bugfix null file in nuxeo
                 if(file == null) {
                 	continue;
-                	
+
                 }
-                
-                
+
+
                 String name = file.getString("name");
                 if (StringUtils.isEmpty(name)) {
                     name = map.getString("filename");
