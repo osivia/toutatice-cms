@@ -1,10 +1,11 @@
 package fr.toutatice.portail.cms.nuxeo.taglib.toutatice;
 
-import java.io.IOException;
-
-import javax.servlet.jsp.JspException;
-
-import org.apache.commons.lang.StringEscapeUtils;
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceFactory;
+import fr.toutatice.portail.cms.nuxeo.taglib.common.ToutaticeSimpleTag;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
 import org.dom4j.io.HTMLWriter;
@@ -12,12 +13,8 @@ import org.osivia.portal.api.html.DOM4JUtils;
 import org.osivia.portal.api.html.HTMLConstants;
 import org.osivia.portal.api.urls.Link;
 
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
-import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
-import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
-import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceFactory;
-import fr.toutatice.portail.cms.nuxeo.taglib.common.ToutaticeSimpleTag;
+import javax.servlet.jsp.JspException;
+import java.io.IOException;
 
 /**
  * Document title tag.
@@ -62,8 +59,6 @@ public class TitleTag extends ToutaticeSimpleTag {
     protected void doTag(NuxeoController nuxeoController, DocumentDTO document) throws JspException, IOException {
         // Title
         String title = StringUtils.defaultIfEmpty(StringUtils.trim(document.getTitle()), document.getId());
-        // Escape HTML
-        title = StringEscapeUtils.escapeHtml(title);
         // Icon
         String icon;
         if (this.icon && (document.getType() != null)) {
