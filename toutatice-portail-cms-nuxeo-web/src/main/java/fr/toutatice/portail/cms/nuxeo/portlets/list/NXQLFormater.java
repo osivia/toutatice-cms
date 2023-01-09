@@ -16,6 +16,7 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.list;
 
+import java.text.Normalizer;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -342,6 +343,10 @@ public class NXQLFormater {
 
         while (itKeyWords.hasNext()) {
             String keyWord = StringUtils.replace(itKeyWords.next(), "'", "\\'");
+            keyWord = Normalizer.normalize(keyWord, Normalizer.Form.NFD);
+            keyWord = keyWord.replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
+            // Remove special chars
+            keyWord = keyWord.replaceAll("[^A-Za-z0-9 ]", " ");
 
             builder.append("(ecm:fulltext = '");
             builder.append(keyWord);
