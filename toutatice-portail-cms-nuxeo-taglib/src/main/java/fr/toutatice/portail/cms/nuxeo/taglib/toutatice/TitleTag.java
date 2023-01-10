@@ -1,9 +1,11 @@
 package fr.toutatice.portail.cms.nuxeo.taglib.toutatice;
 
-import java.io.IOException;
-
-import javax.servlet.jsp.JspException;
-
+import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
+import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
+import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
+import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceFactory;
+import fr.toutatice.portail.cms.nuxeo.taglib.common.ToutaticeSimpleTag;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
 import org.dom4j.io.HTMLWriter;
@@ -11,12 +13,8 @@ import org.osivia.portal.api.html.DOM4JUtils;
 import org.osivia.portal.api.html.HTMLConstants;
 import org.osivia.portal.api.urls.Link;
 
-import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
-import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
-import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
-import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceFactory;
-import fr.toutatice.portail.cms.nuxeo.taglib.common.ToutaticeSimpleTag;
+import javax.servlet.jsp.JspException;
+import java.io.IOException;
 
 /**
  * Document title tag.

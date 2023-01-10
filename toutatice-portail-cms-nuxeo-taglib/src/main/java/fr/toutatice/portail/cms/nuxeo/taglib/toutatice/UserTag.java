@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 
 import javax.servlet.jsp.JspException;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.dom4j.Element;
 import org.dom4j.io.HTMLWriter;
@@ -152,6 +153,9 @@ public class UserTag extends ToutaticeSimpleTag {
             }
 
             if (!this.hideDisplayName) {
+                // Escape HTML
+                displayName = StringEscapeUtils.escapeHtml(displayName);
+
                 // Content
                 Element content;
                 if (url == null) {
