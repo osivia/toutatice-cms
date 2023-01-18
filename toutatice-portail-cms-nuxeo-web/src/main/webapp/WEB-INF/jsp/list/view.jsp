@@ -26,7 +26,7 @@
             </div>
             
             <!-- Pagination -->
-            <jsp:include page="pagination.jsp" />
+            <ttc:include page="pagination.jsp" />
         </c:when>
         
         <c:otherwise>
