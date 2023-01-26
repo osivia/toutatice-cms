@@ -21,8 +21,7 @@ import javax.portlet.RenderResponse;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 import javax.security.auth.Subject;
-import javax.security.jacc.PolicyContext;
-import javax.security.jacc.PolicyContextException;
+
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.csv.CSVFormat;
@@ -484,7 +483,8 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
         if (groups == null || groups.isEmpty() || groups.list().contains("members")) {
             return true;
         }
-
+        //TODO : tomcat migration : no policy context
+/*
         // Get the current authenticated subject through the JACC contract
         Subject subject = null;
         try {
@@ -509,7 +509,7 @@ public class ProcedureTemplateModule extends PrivilegedPortletModule {
             }
         }
 
-
+*/
         return false;
     }
 

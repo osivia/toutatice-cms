@@ -91,7 +91,7 @@ import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
 import javax.portlet.*;
 import javax.security.auth.Subject;
-import javax.security.jacc.PolicyContext;
+
 import javax.servlet.http.HttpSessionEvent;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXSource;
