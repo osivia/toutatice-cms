@@ -357,7 +357,7 @@ public class MenuBarFormater {
             String path = document.getPath() + "/";
 
             // User workspaces
-            List<CMSItem> userWorkspaces = browserAdapter.getUserWorkspaces(cmsContext, userName);
+            List<CMSItem> userWorkspaces = browserAdapter.getCurrentUserWorkspaces(cmsContext);
 
             Iterator<CMSItem> iterator = userWorkspaces.iterator();
             while (iterator.hasNext() && !userWorkspace) {
