@@ -2228,13 +2228,14 @@ public class MenuBarFormater {
         String linkId = id + "Link";
 
         // Modal container
-        Element container = DOM4JUtils.generateDivElement("modal fade", AccessibilityRoles.DIALOG);
+        Element container = DOM4JUtils.generateDivElement("modal fade");
         DOM4JUtils.addAttribute(container, "id", id);
         DOM4JUtils.addAttribute(container, "tabindex", "-1");
         DOM4JUtils.addAriaAttribute(container, "labelledby", labelId);
+        DOM4JUtils.addAriaAttribute(container, "hidden", String.valueOf(true));
 
         // Modal document
-        Element document = DOM4JUtils.generateDivElement("modal-dialog", AccessibilityRoles.DOCUMENT);
+        Element document = DOM4JUtils.generateDivElement("modal-dialog");
         container.add(document);
 
         // Modal content
@@ -2245,57 +2246,38 @@ public class MenuBarFormater {
         Element header = DOM4JUtils.generateDivElement("modal-header");
         content.add(header);
 
-        // Modal close button
-        Element close = DOM4JUtils.generateElement("button", "close", null);
-        DOM4JUtils.addAttribute(close, "type", "button");
-        DOM4JUtils.addDataAttribute(close, "dismiss", "modal");
-        DOM4JUtils.addAriaAttribute(close, "label", bundle.getString("CLOSE"));
-        header.add(close);
-
-        // Modal close button label
-        Element closeLabel = DOM4JUtils.generateElement("span", null, "&times;");
-        DOM4JUtils.addAriaAttribute(closeLabel, "hidden", String.valueOf(true));
-        close.add(closeLabel);
-
         // Modal title
-        Element title = DOM4JUtils.generateElement("h4", "modal-title", " " + bundle.getString("PERMALINK"), "glyphicons glyphicons-basic-link", null);
+        Element title = DOM4JUtils.generateElement("h3", "modal-title fs-5", bundle.getString("PERMALINK"), "glyphicons glyphicons-basic-link", null);
         DOM4JUtils.addAttribute(title, "id", labelId);
         header.add(title);
+
+        // Modal close button
+        Element headerClose = DOM4JUtils.generateElement("button", "btn-close", StringUtils.EMPTY);
+        DOM4JUtils.addAttribute(headerClose, "type", "button");
+        DOM4JUtils.addDataAttribute(headerClose, "bs-dismiss", "modal");
+        DOM4JUtils.addAriaAttribute(headerClose, "label", bundle.getString("CLOSE"));
+        header.add(headerClose);
 
         // Modal body
         Element body = DOM4JUtils.generateDivElement("modal-body");
         content.add(body);
 
-        // Media
-        Element media = DOM4JUtils.generateDivElement("media");
-        body.add(media);
-
-        // Media body
-        Element mediaBody = DOM4JUtils.generateDivElement("media-body relative");
-        media.add(mediaBody);
-
-        // Absolute
-        Element absolute = DOM4JUtils.generateDivElement("absolute absolute-full");
-        mediaBody.add(absolute);
-
-        // Link container
-        Element linkContainer = DOM4JUtils.generateDivElement("text-overflow text-middle");
-        absolute.add(linkContainer);
-
         // Link
-        Element link = DOM4JUtils.generateLinkElement(url, null, null, null, url);
+        Element link = DOM4JUtils.generateLinkElement(url, null, null, "d-block mb-3 no-ajax-link", url);
         DOM4JUtils.addAttribute(link, "id", linkId);
-        linkContainer.add(link);
+        body.add(link);
 
-        // Media right
-        Element mediaRight = DOM4JUtils.generateDivElement("media-right");
-        media.add(mediaRight);
+        // Copy button
+        Element buttonCopy = DOM4JUtils.generateElement("button", "btn btn-primary", bundle.getString("COPY_PERMALINK"), "glyphicons glyphicons-basic-clipboard", null);
+        DOM4JUtils.addAttribute(buttonCopy, "type", "button");
+        DOM4JUtils.addDataAttribute(buttonCopy, "clipboard-target", "#" + linkId);
+        body.add(buttonCopy);
 
-        // Button
-        Element button = DOM4JUtils.generateElement("button", "btn btn-default", " " + bundle.getString("COPY_PERMALINK"), "halflings halflings-copy", null);
-        DOM4JUtils.addAttribute(button, "type", "button");
-        DOM4JUtils.addDataAttribute(button, "clipboard-target", "#" + linkId);
-        mediaRight.add(button);
+        // Close button
+        Element buttonClose = DOM4JUtils.generateElement("button", "btn btn-outline-secondary ms-2", bundle.getString("CLOSE"));
+        DOM4JUtils.addAttribute(buttonClose, "type", "button");
+        DOM4JUtils.addDataAttribute(buttonClose, "bs-dismiss", "modal");
+        body.add(buttonClose);
 
         return DOM4JUtils.writeCompact(container);
     }
