@@ -1408,14 +1408,14 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Portal site
         DocumentType portalSite = DocumentType.createRoot("PortalSite");
         portalSite.addSubtypes("File", "PortalPage", "ContextualLink", "Note");
-        portalSite.setIcon("glyphicons glyphicons-global");
+        portalSite.setIcon("glyphicons glyphicons-basic-globe");
         portalSite.setEditable(true);
         defaultTypes.add(portalSite);
 
         // Portal page
         DocumentType portalPage = DocumentType.createNode("PortalPage");
         portalPage.addSubtypes("File", "PortalPage", "ContextualLink", "Note");
-        portalPage.setIcon("glyphicons glyphicons-more-items");
+        portalPage.setIcon("glyphicons glyphicons-basic-layers");
         portalPage.setEditable(true);
         portalPage.setMovable(true);
         portalPage.setOrdered(true);
