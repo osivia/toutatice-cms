@@ -43,6 +43,7 @@ import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.context.PortalControllerContext;
+import org.osivia.portal.api.contribution.IContributionService;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
@@ -897,11 +898,20 @@ public class ViewListPortlet extends ViewList {
                     requestPageSize = Math.min(requestPageSize, resultsLimit);
                 }
 
+                // Display live version & portal policy filter
+                String displayLiveVersion;
+                String portalPolicyFilter;
+                if (webidOrdering) {
+                    displayLiveVersion = "2";
+                    portalPolicyFilter = InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_NO_FILTER;
+                } else {
+                    displayLiveVersion = nuxeoController.getDisplayLiveVersion();
+                    portalPolicyFilter = configuration.getContentFilter();
+                }
 
                 // Nuxeo command
-                INuxeoCommand command = new ListCommand(nuxeoRequest, nuxeoController.getDisplayLiveVersion(), currentPage, requestPageSize, schemas,
-                        configuration.getContentFilter());
-                ((ListCommand) command).setForceVCS(configuration.isForceVCS());
+                ListCommand command = new ListCommand(nuxeoRequest, displayLiveVersion, currentPage, requestPageSize, schemas, portalPolicyFilter);
+                command.setForceVCS(configuration.isForceVCS());
 
                 // Nuxeo documents
                 PaginableDocuments documents = (PaginableDocuments) nuxeoController.executeNuxeoCommand(command);
