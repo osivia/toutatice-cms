@@ -3793,4 +3793,77 @@ public class CMSService implements ICMSService {
         return properties;
     }
 
+
+    @Override
+    public boolean canDuplicatePage(CMSServiceCtx cmsCtx, String pagePath) throws CMSException {
+        cmsCtx.setDisplayLiveVersion("1");
+
+        CMSItem cmsItem = this.getContent(cmsCtx, pagePath);
+        Document doc = (Document) cmsItem.getNativeItem();
+
+        try {
+            Documents tree = (Documents) this.executeNuxeoCommand(cmsCtx, new CheckBeforeDuplicationCommand(doc.getPath()));
+
+            if(tree.size() == 0) {
+
+                return true;
+            }
+            else {
+                return false;
+            }
+
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
+    }
+
+    @Override
+    public String duplicatePage(CMSServiceCtx cmsCtx, String pagePath) throws CMSException {
+        cmsCtx.setDisplayLiveVersion("1");
+
+        CMSItem cmsItem = this.getContent(cmsCtx, pagePath);
+        Document doc = (Document) cmsItem.getNativeItem();
+        Document copy = null;
+        try {
+
+            String parentPath = StringUtils.substringBeforeLast(doc.getPath(), "/");
+            copy = (Document) this.executeNuxeoCommand(cmsCtx, new DuplicateCommand(doc.getPath(), parentPath));
+
+            // On force le rechargement du cache de la page
+            //cmsCtx.setDisplayLiveVersion("0");
+            cmsCtx.setForceReload(true);
+            this.getContent(cmsCtx, copy.getPath());
+            cmsCtx.setForceReload(false);
+
+
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
+
+        return copy.getPath();
+    }
+
+    @Override
+    public void duplicateFragment(CMSServiceCtx cmsCtx, String pagePath, String refURI) throws CMSException {
+
+        cmsCtx.setDisplayLiveVersion("1");
+
+        CMSItem cmsItem = this.getContent(cmsCtx, pagePath);
+        Document doc = (Document) cmsItem.getNativeItem();
+
+        try {
+
+            this.executeNuxeoCommand(cmsCtx, new DuplicateFragmentCommand(doc, refURI));
+
+            // On force le rechargement du cache
+            cmsCtx.setForceReload(true);
+            this.getContent(cmsCtx, pagePath);
+            cmsCtx.setForceReload(false);
+        } catch (Exception e) {
+            throw new CMSException(e);
+        }
+
+    }
+
+
 }
