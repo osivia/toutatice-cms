@@ -13,18 +13,25 @@
 <portlet:actionURL var="actionURL" />
 
 
+<%--@elvariable id="keyword" type="java.lang.String"--%>
+<%--@elvariable id="keywords" type="java.util.List"--%>
+<%--@elvariable id="selectorDisplayResetButton" type="java.lang.Boolean"--%>
+<%--@elvariable id="selectorHtmlIdentifier" type="java.lang.String"--%>
+<%--@elvariable id="selectorLabel" type="java.lang.String"--%>
+<%--@elvariable id="selectorPlaceholder" type="java.lang.String"--%>
+<%--@elvariable id="selectorType" type="java.lang.String"--%>
 <c:choose>
     <c:when test="${selectorType eq '0'}">
         <c:set var="textValue" value="${keyword}" />
         <c:set var="name" value="add" />
-        <c:set var="glyphicon" value="halflings halflings-plus" />
+        <c:set var="icon" value="glyphicons glyphicons-basic-plus" />
         <c:set var="title"><op:translate key="SELECTOR_MULTI_ADD" /></c:set>
     </c:when>
     
     <c:otherwise>
         <c:set var="textValue" value="${fn:join(keywords, ' ')}" />
         <c:set var="name" value="monoAdd" />
-        <c:set var="glyphicon" value="halflings halflings-ok" />
+        <c:set var="icon" value="glyphicons glyphicons-basic-check" />
         <c:set var="title"><op:translate key="SELECTOR_MONO_ADD" /></c:set>
     </c:otherwise>
 </c:choose>
@@ -34,7 +41,7 @@
     <form action="${actionURL}" method="post" role="form">
         <!-- Label -->
         <c:if test="${not empty selectorLabel}">
-            <label>${selectorLabel}</label>
+            <label class="form-label">${selectorLabel}</label>
         </c:if>
             
         <!-- Multi-valued items -->
@@ -58,27 +65,25 @@
         </c:if>
             
         <!-- Input -->
-        <div class="form-group">
+        <div>
             <div class="${selectorDisplayResetButton or selectorType ne '2' ? 'input-group' : ''}">
                 <input type="text" name="keyword" value="${textValue}" class="form-control" placeholder="${selectorPlaceholder}">
-                <div class="${selectorDisplayResetButton or selectorType ne '2' ? 'input-group-btn' : ''}">
-                    <c:if test="${selectorDisplayResetButton}">
-                        <c:set var="title"><op:translate key="SELECTOR_KEYWORDS_RESET"/></c:set>
-                        <button type="button" title="${title}" class="btn btn-default" data-action="reset">
-                            <i class="glyphicons glyphicons-remove-sign"></i>
-                            <span class="sr-only">${title}</span>
-                        </button>
-                    </c:if>
-                    <c:if test="${selectorType ne '2'}">
-                        <button type="submit" name="${name}" class="btn btn-default">
-                            <i class="${glyphicon}"></i>
-                            <span class="sr-only">${title}</span>
-                        </button>
-                    </c:if>
-                </div>
+                <c:if test="${selectorDisplayResetButton}">
+                    <c:set var="resetTitle"><op:translate key="SELECTOR_KEYWORDS_RESET"/></c:set>
+                    <button type="button" title="${resetTitle}" class="btn btn-outline-secondary" data-action="reset">
+                        <i class="glyphicons glyphicons-basic-times"></i>
+                        <span class="visually-hidden">${resetTitle}</span>
+                    </button>
+                </c:if>
+                <c:if test="${selectorType ne '2'}">
+                    <button type="submit" name="${name}" class="btn btn-primary">
+                        <i class="${icon}"></i>
+                        <span class="visually-hidden">${title}</span>
+                    </button>
+                </c:if>
             </div>
             <c:if test="${selectorType eq '2'}">
-                <button type="submit" name="${name}" class="hidden"></button>
+                <button type="submit" name="${name}" class="d-none"></button>
             </c:if>
         </div>
     </form>
