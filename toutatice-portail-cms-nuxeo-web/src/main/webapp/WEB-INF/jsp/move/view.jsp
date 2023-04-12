@@ -20,70 +20,63 @@
     <portlet:param name="excludedTypes" value="${excludedTypes}" />
 </portlet:resourceURL>
 
-<portlet:actionURL name="move" var="moveURL"></portlet:actionURL>
+<portlet:actionURL name="move" var="moveURL"/>
 
 
 <c:set var="namespace"><portlet:namespace /></c:set>
 
 
-<form action="${moveURL}" method="post" class="form-horizontal" role="form">
-    <p class="lead">
-        <i class="glyphicons glyphicons-move"></i>
+<form action="${moveURL}" method="post" role="form">
+    <h3 class="h5 mb-3">
+        <i class="glyphicons glyphicons-basic-block-move"></i>
         <span><op:translate key="DOCUMENT_MOVE_TITLE" /></span>
-    </p>
+    </h3>
 
     <!-- Target path -->
-    <div class="form-group required ${error eq 'emptyTargetPath' ? 'has-error' : ''} ${error eq '403' ? 'has-warning' : ''}">
-        <label class="col-sm-3 control-label"><op:translate key="DOCUMENT_MOVE_TARGET_PATH" /></label>
-        <div class="col-sm-9">
-            <div class="selector">
-                <input type="hidden" name="targetPath" class="selector-value">
+    <div class="mb-3">
+        <label class="form-label"><op:translate key="DOCUMENT_MOVE_TARGET_PATH" /></label>
+        <div class="selector">
+            <input type="hidden" name="targetPath" class="selector-value">
 
-                <div class="panel panel-default">
-                    <div class="panel-body">
-                        <div class="fancytree fancytree-selector fixed-height" data-lazyloadingurl="${lazyLoadingURL}">
-                        </div>
+            <div class="card ${error eq 'emptyTargetPath' or error eq '403' ? 'border-danger' : ''}">
+                <div class="card-body">
+                    <div class="fancytree fancytree-selector fixed-height" data-lazyloadingurl="${lazyLoadingURL}">
                     </div>
                 </div>
-                
-                <c:choose>
-                    <c:when test="${error eq 'emptyTargetPath'}">
-                        <p class="help-block"><op:translate key="DOCUMENT_MOVE_EMPTY_TARGET_PATH_MESSAGE" /></p>
-                    </c:when>
-                    
-                    <c:when test="${error eq '403'}">
-                        <p class="help-block"><op:translate key="DOCUMENT_MOVE_FORBIDDEN_MESSAGE" /></p>
-                    </c:when>
-                </c:choose>
             </div>
+
+            <c:choose>
+                <c:when test="${error eq 'emptyTargetPath'}">
+                    <div class="invalid-feedback"><op:translate key="DOCUMENT_MOVE_EMPTY_TARGET_PATH_MESSAGE" /></div>
+                </c:when>
+
+                <c:when test="${error eq '403'}">
+                    <div class="invalid-feedback"><op:translate key="DOCUMENT_MOVE_FORBIDDEN_MESSAGE" /></div>
+                </c:when>
+            </c:choose>
         </div>
     </div>
     
     <!-- Space change -->
     <c:if test="${enableSpaceChange}">
-        <div class="form-group">
-            <label class="col-sm-3 control-label"><op:translate key="DOCUMENT_MOVE_SPACE" /></label>
-            <div class="col-sm-9">
-                <div class="form-inline">
-                    <p class="form-control-static">${spaceDocument.title}</p>
-                    <c:if test="${spaceDocument.type.name=='Workspace'}">
-    	                <a href="${changeSpaceURL}" class="btn btn-default btn-sm">
-    	                    <span><op:translate key="DOCUMENT_MOVE_CHANGE_SPACE" /></span>
-    	                </a>
-                    </c:if>
-                </div>
+        <div class="mb-3">
+            <label class="form-label"><op:translate key="DOCUMENT_MOVE_SPACE" /></label>
+            <div class="form-inline">
+                <p class="form-control-static">${spaceDocument.title}</p>
+                <c:if test="${spaceDocument.type.name=='Workspace'}">
+                    <a href="${changeSpaceURL}" class="btn btn-default btn-sm">
+                        <span><op:translate key="DOCUMENT_MOVE_CHANGE_SPACE" /></span>
+                    </a>
+                </c:if>
             </div>
         </div>
     </c:if>
     
     <!-- Buttons -->
-    <div class="form-group">
-        <div class="col-sm-offset-3 col-sm-9">
-            <button type="submit" class="btn btn-primary">
-                <i class="glyphicons glyphicons-floppy-disk"></i>
-                <span><op:translate key="MOVE" /></span>
-            </button>
-            <button type="button" class="btn btn-default" onclick="closeFancybox()"><op:translate key="CANCEL" /></button>
-        </div>
-    </div>
+    <button type="submit" class="btn btn-primary">
+        <span><op:translate key="MOVE" /></span>
+    </button>
+    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+        <span><op:translate key="CANCEL" /></span>
+    </button>
 </form>

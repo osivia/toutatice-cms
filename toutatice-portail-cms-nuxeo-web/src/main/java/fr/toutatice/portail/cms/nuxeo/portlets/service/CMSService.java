@@ -2918,8 +2918,7 @@ public class CMSService implements ICMSService {
             properties.put(MoveDocumentPortlet.ACCEPTED_TYPES_WINDOW_PROPERTY, cmsItemType.getName());
 
             try {
-                url = this.urlFactory.getStartPortletUrl(portalControllerContext, "toutatice-portail-cms-nuxeo-move-portlet-instance", properties,
-                        PortalUrlType.POPUP);
+                url = this.urlFactory.getStartPortletUrl(portalControllerContext, "toutatice-portail-cms-nuxeo-move-portlet-instance", properties, PortalUrlType.MODAL);
             } catch (PortalException e) {
                 throw new CMSException(e);
             }
@@ -2945,15 +2944,13 @@ public class CMSService implements ICMSService {
         // Publication infos
         CMSPublicationInfos publicationInfos = this.getPublicationInfos(cmsContext, document.getPath());
 
-        if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_62)
-                || (!DocumentHelper.isRemoteProxy(cmsContext, publicationInfos) && publicationInfos.isLiveSpace())) {
+        if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_62) || (!DocumentHelper.isRemoteProxy(cmsContext, publicationInfos) && publicationInfos.isLiveSpace())) {
             // Properties
             Map<String, String> properties = new HashMap<String, String>();
             properties.put(ReorderDocumentsPortlet.PATH_WINDOW_PROPERTY, document.getPath());
 
             try {
-                url = this.urlFactory.getStartPortletUrl(portalControllerContext, "toutatice-portail-cms-nuxeo-reorder-portlet-instance", properties,
-                        PortalUrlType.POPUP);
+                url = this.urlFactory.getStartPortletUrl(portalControllerContext, "toutatice-portail-cms-nuxeo-reorder-portlet-instance", properties, PortalUrlType.MODAL);
             } catch (PortalException e) {
                 throw new CMSException(e);
             }
