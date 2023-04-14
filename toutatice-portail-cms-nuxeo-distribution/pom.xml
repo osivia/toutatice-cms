@@ -133,7 +133,7 @@
                                 <configuration>
                                     <artifactItems>
                                         <artifactItem>
-                                            <groupId>org.osivia.portal</groupId>
+                                            <groupId>org.osivia.ajax-portal</groupId>
                                             <artifactId>osivia-portal-distribution</artifactId>
                                             <version>${osivia.portal.version}</version>
                                             <type>zip</type>

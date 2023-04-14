@@ -18,7 +18,7 @@
 
         <!-- OSIVIA Portal -->
         <dependency>
-            <groupId>org.osivia.portal</groupId>
+            <groupId>org.osivia.ajax-portal</groupId>
             <artifactId>osivia-portal-dependencies</artifactId>
             <scope>runtime</scope>
         </dependency>
