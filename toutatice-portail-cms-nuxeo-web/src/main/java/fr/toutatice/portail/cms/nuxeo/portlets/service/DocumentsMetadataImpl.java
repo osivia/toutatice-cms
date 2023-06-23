@@ -1,21 +1,19 @@
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.cms.EcmDocument;
 import org.osivia.portal.api.cms.Symlink;
 import org.osivia.portal.core.cms.DocumentsMetadata;
 import org.osivia.portal.core.web.IWebUrlService;
+
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Documents metadata implementation.
@@ -25,59 +23,90 @@ import org.osivia.portal.core.web.IWebUrlService;
  */
 public class DocumentsMetadataImpl implements DocumentsMetadata {
 
-    /** WebId Nuxeo document property name. */
+    /**
+     * WebId Nuxeo document property name.
+     */
     public static final String WEB_ID_PROPERTY = "ttc:webid";
-    /** Web URL segment Nuxeo document property name. */
+    /**
+     * Web URL segment Nuxeo document property name.
+     */
     public static final String WEB_URL_SEGMENT_PROPERTY = "ottcweb:segment";
-    /** Modified Nuxeo document property name. */
+    /**
+     * Modified Nuxeo document property name.
+     */
     public static final String MODIFIED_PROPERTY = "dc:modified";
 
 
-    /** WebId path prefix. */
+    /**
+     * WebId path prefix.
+     */
     private static final String WEB_ID_PATH_PREFIX = "/" + IWebUrlService.WEB_ID_PREFIX;
 
 
-    /** CMS base path. */
+    /**
+     * CMS base path.
+     */
     private final String basePath;
-    /** Nuxeo documents. */
+    /**
+     * Nuxeo documents.
+     */
     private final List<Document> documents;
-    /** Symlinks. */
+    /**
+     * Symlinks.
+     */
     private final List<Symlink> symlinks;
 
-    /** WebId to path association map. */
-    private final Map<String, String> webIds;
-    /** Path to webId and segment association map. */
-    private final Map<String, PathValues> paths;
-    /** Parent path and segment to child path association map. */
-    private final Map<SegmentKey, String> segments;
+    /**
+     * WebId to path association map.
+     */
+    private final ConcurrentMap<String, String> webIds;
+    /**
+     * Path to webId and segment association map.
+     */
+    private final ConcurrentMap<String, PathValues> paths;
+    /**
+     * Parent path and segment to child path association map.
+     */
+    private final ConcurrentMap<SegmentKey, String> segments;
 
-    /** WebId to web path association map cache. */
-    private final Map<String, String> toWebPaths;
-    /** Web path to webId association map cache. */
-    private final Map<String, String> fromWebPaths;
+    /**
+     * WebId to web path association map cache.
+     */
+    private final ConcurrentMap<String, String> toWebPaths;
+    /**
+     * Web path to webId association map cache.
+     */
+    private final ConcurrentMap<String, String> fromWebPaths;
+
+    /**
+     * Log.
+     */
+    private final Log log;
 
 
-    /** Timestamp. */
+    /**
+     * Timestamp.
+     */
     private long timestamp;
 
 
     /**
      * Constructor.
      *
-     * @param basePath CMS base path
+     * @param basePath  CMS base path
      * @param documents Nuxeo documents
-     * @param symlinks symlinks
+     * @param symlinks  symlinks
      */
     public DocumentsMetadataImpl(String basePath, List<Document> documents, List<Symlink> symlinks) {
         super();
         this.basePath = basePath;
         this.documents = documents;
         this.symlinks = symlinks;
-        this.webIds = new ConcurrentHashMap<String, String>(this.documents.size());
-        this.paths = new ConcurrentHashMap<String, PathValues>(this.documents.size() + this.symlinks.size());
-        this.segments = new ConcurrentHashMap<SegmentKey, String>(this.documents.size() + this.symlinks.size());
-        this.toWebPaths = new ConcurrentHashMap<String, String>(this.documents.size());
-        this.fromWebPaths = new ConcurrentHashMap<String, String>(this.documents.size());
+        this.webIds = new ConcurrentHashMap<>(this.documents.size());
+        this.paths = new ConcurrentHashMap<>(this.documents.size() + this.symlinks.size());
+        this.segments = new ConcurrentHashMap<>(this.documents.size() + this.symlinks.size());
+        this.toWebPaths = new ConcurrentHashMap<>(this.documents.size());
+        this.fromWebPaths = new ConcurrentHashMap<>(this.documents.size());
 
 
         // Symlinks
@@ -121,6 +150,10 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
 
         // Increase time to exclude last modified document from the next request (Nuxeo documents timestamp are truncated to 10ms)
         this.timestamp += 10;
+
+
+        // Log
+        this.log = LogFactory.getLog(this.getClass());
     }
 
 
@@ -152,25 +185,25 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
         }
 
 
-        // Splitted path
-        String[] splittedPath;
+        // Split path
+        String[] splitPath;
         if (symlink == null) {
-            splittedPath = StringUtils.split(path, "/");
+            splitPath = StringUtils.split(path, "/");
         } else {
             String lookupPath = symlink.getVirtualPath() + StringUtils.substringAfter(path, symlink.getTargetPath());
-            splittedPath = StringUtils.split(lookupPath, "/");
+            splitPath = StringUtils.split(lookupPath, "/");
         }
 
 
-        // Search closest web path
+        // Search the closest web path
         String closestWebPath = null;
         int factor;
-        for (factor = splittedPath.length; factor > 0; factor--) {
+        for (factor = splitPath.length; factor > 0; factor--) {
             // Working path
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i < factor; i++) {
                 builder.append("/");
-                builder.append(splittedPath[i]);
+                builder.append(splitPath[i]);
             }
             String workingPath = builder.toString();
 
@@ -200,15 +233,15 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
         StringBuilder workingPath = new StringBuilder();
         for (int i = 0; i < factor; i++) {
             workingPath.append("/");
-            workingPath.append(splittedPath[i]);
+            workingPath.append(splitPath[i]);
         }
 
 
         // Build web path
         boolean incompleteWebPath = !StringUtils.startsWith(workingPath.toString(), this.basePath);
-        for (int i = factor; i < splittedPath.length; i++) {
+        for (int i = factor; i < splitPath.length; i++) {
             workingPath.append("/");
-            workingPath.append(splittedPath[i]);
+            workingPath.append(splitPath[i]);
 
             // Current path
             String currentPath = workingPath.toString();
@@ -242,10 +275,8 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
         if (incompleteWebPath) {
             workingWebPath.append(WEB_ID_PATH_PREFIX);
             workingWebPath.append(webId);
-            webPath = workingWebPath.toString();
-        } else {
-            webPath = workingWebPath.toString();
         }
+        webPath = workingWebPath.toString();
         this.toWebPaths.put(webId, webPath);
 
         // Reversed dependency
@@ -277,18 +308,18 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
         }
 
 
-        // Splitted web path
-        String[] splittedWebPath = StringUtils.split(webPath, "/");
+        // Split web path
+        String[] splitWebPath = StringUtils.split(webPath, "/");
 
         // Search closest webId
         String closestWebId = null;
         int factor;
-        for (factor = splittedWebPath.length; factor > 1; factor--) {
+        for (factor = splitWebPath.length; factor > 1; factor--) {
             // Working web path
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i < factor; i++) {
                 builder.append("/");
-                builder.append(splittedWebPath[i]);
+                builder.append(splitWebPath[i]);
             }
             String workingWebPath = builder.toString();
 
@@ -312,7 +343,7 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
         StringBuilder workingWebPath = new StringBuilder();
         for (int i = 0; i < factor; i++) {
             workingWebPath.append("/");
-            workingWebPath.append(splittedWebPath[i]);
+            workingWebPath.append(splitWebPath[i]);
         }
 
 
@@ -327,9 +358,9 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
 
         // WebId
         String webId = closestWebId;
-        for (int i = factor; i < splittedWebPath.length; i++) {
+        for (int i = factor; i < splitWebPath.length; i++) {
             // Segment
-            String segment = splittedWebPath[i];
+            String segment = splitWebPath[i];
 
             workingWebPath.append("/");
             workingWebPath.append(segment);
@@ -378,7 +409,7 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
      */
     @Override
     public List<EcmDocument> getDocuments() {
-        return new ArrayList<EcmDocument>(this.documents);
+        return new ArrayList<>(this.documents);
     }
 
 
@@ -404,6 +435,10 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
                 if (ecmDocument instanceof Document) {
                     // Nuxeo document
                     Document document = (Document) ecmDocument;
+
+                    if (this.log.isDebugEnabled()) {
+                        this.log.debug(String.format("[Update] Start update for document '%s'", document.getPath()));
+                    }
 
                     // WebId
                     String webId = document.getString(WEB_ID_PROPERTY);
@@ -450,50 +485,63 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
 
                         if (!StringUtils.equals(path, originalPath) || !StringUtils.equals(segment, originalSegment)) {
                             // Update webIds
+                            Map<String, String> addedWebIds = new HashMap<>();
                             if (originalPath != null) {
                                 for (Entry<String, String> entry : this.webIds.entrySet()) {
                                     String currentWebId = entry.getKey();
                                     String currentPath = entry.getValue();
                                     if (currentPath.startsWith(originalPath)) {
-                                        this.webIds.put(currentWebId, path + StringUtils.substringAfter(currentPath, originalPath));
+                                        addedWebIds.put(currentWebId, path + StringUtils.substringAfter(currentPath, originalPath));
 
                                         // Remove obsolete web path
                                         this.toWebPaths.remove(currentWebId);
                                     }
                                 }
                             }
-                            this.webIds.put(webId, path);
+                            addedWebIds.put(webId, path);
+                            this.webIds.putAll(addedWebIds);
+
 
                             // Update paths
+                            Set<String> removedPathKeys = new HashSet<>();
+                            Map<String, PathValues> addedPaths = new HashMap<>();
                             if (originalPath != null) {
-                                this.paths.remove(originalPath);
+                                removedPathKeys.add(originalPath);
                                 for (Entry<String, PathValues> entry : this.paths.entrySet()) {
                                     String currentPath = entry.getKey();
                                     if (currentPath.startsWith(originalPath)) {
-                                        this.paths.remove(currentPath);
-                                        this.paths.put(path + StringUtils.substringAfter(currentPath, originalPath), entry.getValue());
+                                        removedPathKeys.add(currentPath);
+                                        addedPaths.put(path + StringUtils.substringAfter(currentPath, originalPath), entry.getValue());
                                     }
                                 }
                             }
-                            this.paths.put(path, new PathValues(webId, segment));
+                            addedPaths.put(path, new PathValues(webId, segment));
+                            this.paths.keySet().removeAll(removedPathKeys);
+                            this.paths.putAll(addedPaths);
 
                             // Update segments
+                            Map<SegmentKey, String> addedSegments = new HashMap<>();
                             if ((originalPath != null) && (originalSegment != null)) {
                                 this.segments.remove(new SegmentKey(StringUtils.substringBeforeLast(originalPath, "/"), originalSegment));
                                 for (Entry<SegmentKey, String> entry : this.segments.entrySet()) {
                                     SegmentKey key = entry.getKey();
                                     if (key.parentPath.startsWith(originalPath)) {
-                                        this.segments.put(new SegmentKey(path, key.segment), path + StringUtils.substringAfter(entry.getValue(), originalPath));
+                                        addedSegments.put(new SegmentKey(path, key.segment), path + StringUtils.substringAfter(entry.getValue(), originalPath));
                                     }
                                 }
                             }
                             if (!path.equals(this.basePath) && (segment != null)) {
-                                this.segments.put(new SegmentKey(StringUtils.substringBeforeLast(path, "/"), segment), path);
+                                addedSegments.put(new SegmentKey(StringUtils.substringBeforeLast(path, "/"), segment), path);
                             }
+                            this.segments.putAll(addedSegments);
 
                             // Remove obsolete web path
                             this.toWebPaths.remove(webId);
                         }
+                    }
+
+                    if (this.log.isDebugEnabled()) {
+                        this.log.debug(String.format("[Update] End update for document '%s'", document.getPath()));
                     }
                 }
             }
@@ -506,7 +554,7 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
 
     /**
      * Update symlinks.
-     * 
+     *
      * @param updates update values
      */
     private void updateSymlinks(DocumentsMetadata updates) {
@@ -558,7 +606,7 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
 
         // Remove obsolete web paths
         if (CollectionUtils.isNotEmpty(updatedPaths)) {
-            String[] prefixes = updatedPaths.toArray(new String[updatedPaths.size()]);
+            String[] prefixes = updatedPaths.toArray(new String[0]);
 
             for (Entry<String, String> entry : this.webIds.entrySet()) {
                 String currentWebId = entry.getKey();
@@ -576,18 +624,22 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
      *
      * @author Cédric Krommenhoek
      */
-    private class PathValues {
+    private static class PathValues {
 
-        /** WebId. */
+        /**
+         * WebId.
+         */
         private final String webId;
-        /** Segment. */
+        /**
+         * Segment.
+         */
         private final String segment;
 
 
         /**
          * Constructor.
          *
-         * @param webId webId
+         * @param webId   webId
          * @param segment segment
          */
         public PathValues(String webId, String segment) {
@@ -604,11 +656,15 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
      *
      * @author Cédric Krommenhoek
      */
-    private class SegmentKey {
+    private static class SegmentKey {
 
-        /** Parent path. */
+        /**
+         * Parent path.
+         */
         private final String parentPath;
-        /** Segment. */
+        /**
+         * Segment.
+         */
         private final String segment;
 
 
@@ -616,7 +672,7 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
          * Constructor.
          *
          * @param parentPath parent path
-         * @param segment segment
+         * @param segment    segment
          */
         public SegmentKey(String parentPath, String segment) {
             super();
@@ -625,61 +681,23 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
         }
 
 
-        /**
-         * {@inheritDoc}
-         */
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            SegmentKey that = (SegmentKey) o;
+
+            if (!Objects.equals(parentPath, that.parentPath)) return false;
+            return Objects.equals(segment, that.segment);
+        }
+
+
         @Override
         public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = (prime * result) + this.getOuterType().hashCode();
-            result = (prime * result) + ((this.parentPath == null) ? 0 : this.parentPath.hashCode());
-            result = (prime * result) + ((this.segment == null) ? 0 : this.segment.hashCode());
+            int result = parentPath != null ? parentPath.hashCode() : 0;
+            result = 31 * result + (segment != null ? segment.hashCode() : 0);
             return result;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (this.getClass() != obj.getClass()) {
-                return false;
-            }
-            SegmentKey other = (SegmentKey) obj;
-            if (!this.getOuterType().equals(other.getOuterType())) {
-                return false;
-            }
-            if (this.parentPath == null) {
-                if (other.parentPath != null) {
-                    return false;
-                }
-            } else if (!this.parentPath.equals(other.parentPath)) {
-                return false;
-            }
-            if (this.segment == null) {
-                if (other.segment != null) {
-                    return false;
-                }
-            } else if (!this.segment.equals(other.segment)) {
-                return false;
-            }
-            return true;
-        }
-
-        /**
-         * Get outer type.
-         *
-         * @return outer type
-         */
-        private DocumentsMetadataImpl getOuterType() {
-            return DocumentsMetadataImpl.this;
         }
 
     }
