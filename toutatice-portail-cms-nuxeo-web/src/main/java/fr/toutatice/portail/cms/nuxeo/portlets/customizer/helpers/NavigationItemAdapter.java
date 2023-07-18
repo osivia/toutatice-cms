@@ -265,10 +265,6 @@ public class NavigationItemAdapter {
         if (StringUtils.isNotEmpty(explicitUrl)) {
             properties.put(IWebIdService.EXPLICIT_URL, explicitUrl);
         }
-        String extensionUrl = (String) doc.getProperties().get("ttc:extensionUrl");
-        if (StringUtils.isNotEmpty(extensionUrl)) {
-            properties.put(IWebIdService.EXTENSION_URL, extensionUrl);
-        }
 		/*
 		if( publishSpaceItem != null && "Workspace".equals(((Document) publishSpaceItem.getNativeItem()).getType()))	{
 			// Tous les sous-items d'un workspace sont navigables
