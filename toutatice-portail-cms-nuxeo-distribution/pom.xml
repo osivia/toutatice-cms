@@ -106,7 +106,7 @@
                                         <artifactItem>
                                             <groupId>org.osivia.portal</groupId>
                                             <artifactId>osivia-portal-distribution</artifactId>
-                                            <version>${osivia-portal.version}</version>
+                                            <version>${osivia.portal.version}</version>
                                             <type>zip</type>
                                             <overWrite>true</overWrite>
                                             <outputDirectory>${project.build.directory}/osivia-distribution</outputDirectory>

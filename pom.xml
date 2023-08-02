@@ -32,19 +32,19 @@
             <dependency>
                 <groupId>org.osivia.portal</groupId>
                 <artifactId>osivia-portal-dependencies</artifactId>
-                <version>${osivia-portal.version}</version>
+                <version>${osivia.portal.version}</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.osivia.portal</groupId>
                 <artifactId>osivia-portal-dependencies-test</artifactId>
-                <version>${osivia-portal.version}</version>
+                <version>${osivia.portal.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.osivia.portal.core</groupId>
                 <artifactId>osivia-portal-custom-lib-utils</artifactId>
-                <version>${osivia-portal.version}</version>
+                <version>${osivia.portal.version}</version>
                 <scope>provided</scope>
             </dependency>
 
