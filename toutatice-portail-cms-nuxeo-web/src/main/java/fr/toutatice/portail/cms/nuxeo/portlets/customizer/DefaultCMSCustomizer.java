@@ -167,6 +167,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * Navigation panel players.
      */
     private final Map<String, PanelPlayer> navigationPanelPlayers;
+    
+    /** Avatar map. */
+    private final Map<String, String> avatarMap;
 
     /**
      * Binary timestamps.
@@ -267,6 +270,10 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Navigation panel players
         this.navigationPanelPlayers = new ConcurrentHashMap<>();
         this.navigationPanelPlayers.put("toutatice-portail-cms-nuxeo-fileBrowserPortletInstance", this.getFileBrowserPanelPlayer());
+        
+
+        // Avatar map
+        this.avatarMap = new ConcurrentHashMap<>();
 
         // Binary timestamps
         this.binaryTimestamps = new ConcurrentHashMap<>();
@@ -1612,53 +1619,29 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * {@inheritDoc}
      */
     
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Link getUserAvatar(String username) {
-        return this.getUserAvatar(username, true);
-    }
-    
+        // Get timestamp defined previously
+        String avatarTime = this.avatarMap.get(username);
+        if (avatarTime == null) {
+            // if not defined, set ie
+            avatarTime = this.refreshUserAvatar(username);
+        }
 
-    public Link getUserAvatar(String username, boolean checkCache) {
         // URL
         StringBuilder url = new StringBuilder();
-
-        // Avatar modules
-        List<AvatarModule> modules = this.pluginManager.getAvatarModules();
-        if (CollectionUtils.isNotEmpty(modules)) {
-            Iterator<AvatarModule> iterator = modules.iterator();
-            while ((url.length() == 0) && iterator.hasNext()) {
-                // Avatar module
-                AvatarModule module = iterator.next();
-
-                // Customized avatar URL
-                String customizedUrl = module.getUrl(username);
-                if (StringUtils.isNotEmpty(customizedUrl)) {
-                    url.append(customizedUrl);
-                }
-            }
+        url.append(AVATAR_SERVLET);
+        try {
+            url.append(URLEncoder.encode(username, CharEncoding.UTF_8));
+        } catch (UnsupportedEncodingException e) {
+            this.log.error(e);
         }
-
-        if (url.length() == 0) {
-            AvatarInfo avatar = AvatarUtils.getAvatar(username, checkCache);
-            
-            String genericResource = System.getProperty("osivia.avatar.generic.resource");
-            
-            if(StringUtils.isNotEmpty(genericResource) && (avatar == null || BooleanUtils.isTrue(avatar.getGenericResource()))) {
-                url.append(genericResource);
-            }   else    {
-                // timestamp is concated in the url to control the client cache
-                url.append(getResourceContextPath()+AVATAR_SERVLET);
-            try {
-                url.append(URLEncoder.encode(username, CharEncoding.UTF_8));
-            } catch (UnsupportedEncodingException e) {
-                this.log.error(e);
-            }
-                if( avatar != null) {
-                    url.append("&t=");
-                    url.append(avatar.getTimeStamp());
-                }
-            }
-        }
+        // timestamp is concated in the url to control the client cache
+        url.append("&t=");
+        url.append(avatarTime);
 
         return new Link(url.toString(), false);
     }
@@ -1676,8 +1659,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         return link;
     }
-
-
+    
     /**
      * {@inheritDoc}
      */
@@ -1685,18 +1667,25 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     public Link getUserAvatar(CMSServiceCtx cmsCtx, String username) throws CMSException {
         // PersonService user list : don't check avatar
         // Can take more then one minute for a list
-        return this.getUserAvatar(username, false);
+        return this.getUserAvatar(username);
 
     }
-
-
+    
+    
     /**
      * {@inheritDoc}
      */
     @Override
     public String refreshUserAvatar(String username) {
-        return AvatarUtils.refreshUserAvatar(username);
+
+        // renew the timestamp and map it to the user
+        String avatarTime = Long.toString(new Date().getTime());
+
+        this.avatarMap.put(username, avatarTime);
+
+        return avatarTime;
     }
+
 
 
     /**
@@ -2336,6 +2325,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     public List<IPortletModule> getDocumentModules(String type) {
         return this.pluginManager.getDocumentModules(type);
     }
+
+
 
     
 }
