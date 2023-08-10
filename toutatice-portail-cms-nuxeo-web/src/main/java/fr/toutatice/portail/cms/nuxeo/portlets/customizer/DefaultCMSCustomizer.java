@@ -61,6 +61,7 @@ import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.cms.FileMimeType;
 import org.osivia.portal.api.cms.UniversalID;
 import org.osivia.portal.api.context.PortalControllerContext;
+import org.osivia.portal.api.directory.v2.model.Person;
 
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
@@ -1661,6 +1662,20 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         }
 
         return new Link(url.toString(), false);
+    }
+
+    
+    @Override
+    public Link getUserAvatar(Person person) {
+        Link link;
+        if (person == null) {
+            link = null;
+        } else {
+            String userId = person.getUid();
+            link = this.getUserAvatar(userId);
+        }
+
+        return link;
     }
 
 

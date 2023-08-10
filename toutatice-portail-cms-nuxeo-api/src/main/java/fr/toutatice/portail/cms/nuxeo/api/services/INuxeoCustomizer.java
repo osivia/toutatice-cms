@@ -34,6 +34,7 @@ import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.customization.ICustomizationService;
+import org.osivia.portal.api.directory.v2.model.Person;
 
 import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
@@ -216,6 +217,20 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @return Nuxeo comments service instance
      */
     INuxeoCommentsService getNuxeoCommentsService();
+    
+    
+
+    /**
+     * Get user avatar link.
+     *
+     * @param person person
+     * @return link
+     */
+    Link getUserAvatar(Person person);
+
+
+    
+ 
 
     /**
      * Get the user avatar.
