@@ -52,6 +52,10 @@
                     <groupId>commons-logging</groupId>
                     <artifactId>commons-logging</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>                
             </exclusions>
         </dependency>
 
@@ -72,8 +76,13 @@
 		    <groupId>xalan</groupId>
 		    <artifactId>xalan</artifactId>
 		    <version>2.7.2</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+            </exclusions>		
 		</dependency>
-		
         <dependency>
             <groupId>org.jboss.portal</groupId>
             <artifactId>portal-web-lib</artifactId>
