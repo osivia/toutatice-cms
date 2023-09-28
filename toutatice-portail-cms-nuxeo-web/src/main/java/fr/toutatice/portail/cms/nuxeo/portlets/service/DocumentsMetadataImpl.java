@@ -445,24 +445,8 @@ public class DocumentsMetadataImpl implements DocumentsMetadata {
                     // Path
                     String path = StringUtils.removeEnd(document.getPath(), ".proxy");
 
-                    // Symlink
-                    Symlink symlink = null;
-                    if (!path.startsWith(this.basePath)) {
-                        for (Symlink link : this.symlinks) {
-                            if (path.startsWith(link.getTargetPath())) {
-                                symlink = link;
-                                break;
-                            }
-                        }
-                    }
-
                     // Segment
-                    String segment;
-                    if (symlink == null) {
-                        segment = document.getString(WEB_URL_SEGMENT_PROPERTY);
-                    } else {
-                        segment = symlink.getSegment();
-                    }
+                    String segment = document.getString(WEB_URL_SEGMENT_PROPERTY);
 
                     if (StringUtils.isNotBlank(webId)) {
                         // Original path
