@@ -16,7 +16,6 @@ package fr.toutatice.portail.cms.nuxeo.portlets.customizer;
 import fr.toutatice.portail.cms.nuxeo.api.ContextualizationHelper;
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
-import fr.toutatice.portail.cms.nuxeo.api.avatar.AvatarModule;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.*;
 import fr.toutatice.portail.cms.nuxeo.api.forms.FormFilter;
@@ -26,19 +25,17 @@ import fr.toutatice.portail.cms.nuxeo.api.portlet.ViewList;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommentsService;
 import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCustomizer;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
+import fr.toutatice.portail.cms.nuxeo.portlets.avatar.AvatarServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.binaries.BinaryServlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.cms.ExtendedDocumentInfos;
 import fr.toutatice.portail.cms.nuxeo.portlets.comments.CommentsFormatter;
-import fr.toutatice.portail.cms.nuxeo.portlets.comments.NuxeoCommentsServiceImpl;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.*;
 import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand.WebConfigurationType;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.ViewDocumentPortlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.ContextDocumentsHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.forms.ProcedureTemplateModule;
 import fr.toutatice.portail.cms.nuxeo.portlets.fragment.*;
 import fr.toutatice.portail.cms.nuxeo.portlets.service.CMSService;
-
 import fr.toutatice.portail.cms.nuxeo.service.editablewindow.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.csv.CSVFormat;
@@ -47,10 +44,8 @@ import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang.CharEncoding;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jboss.portal.common.invocation.Scope;
 import org.jboss.portal.core.model.portal.*;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.nuxeo.ecm.automation.client.model.Documents;
@@ -62,7 +57,7 @@ import org.osivia.portal.api.cms.FileMimeType;
 import org.osivia.portal.api.cms.UniversalID;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.directory.v2.model.Person;
-
+import org.osivia.portal.api.directory.v2.service.PersonService;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
 import org.osivia.portal.api.internationalization.IInternationalizationService;
@@ -91,8 +86,6 @@ import org.xml.sax.XMLReader;
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
 import javax.portlet.*;
-import javax.security.auth.Subject;
-
 import javax.servlet.http.HttpSessionEvent;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXSource;
@@ -114,7 +107,6 @@ import java.util.regex.Pattern;
  */
 public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
-
     /**
      * Default schemas.
      */
@@ -129,11 +121,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     public static final String TEMPLATE_DOWNLOAD = "download";
 
     /**
-     * Servlet URL for avatars
-     */
-    private static final String AVATAR_SERVLET = "/avatar?username=";
-
-    /** 
      * Sevlet URL for binary resources
      */
     private static final String BINARY_SERVLET = "/binary";
@@ -229,7 +216,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /**
      * Nuxeo comments service.
      */
-    private  INuxeoCommentsService nuxeoCommentsService;
+    private INuxeoCommentsService nuxeoCommentsService;
     /**
      * Internationalization service
      */
@@ -242,6 +229,11 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * Notification service
      */
     private final INotificationsService notificationsService;
+    /**
+     * Person service.
+     */
+    private final PersonService personService;
+
     /**
      * File MIME types.
      */
@@ -284,6 +276,8 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         this.browserAdapter = BrowserAdapter.getInstance(cmsService);
         // Navigation item adapter
         this.navigationItemAdapter = new NavigationItemAdapter(this);
+        // Person service
+        this.personService = Locator.getService(PersonService.class);
 
         try {
             // Initialisé ici pour résoudre problème de classloader
@@ -313,8 +307,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         this.bundleFactory = this.internationalizationService.getBundleFactory(this.getClass().getClassLoader());
         // Notifications service
         this.notificationsService = Locator.findMBean(INotificationsService.class, INotificationsService.MBEAN_NAME);
-   
-        AvatarUtils.portletContext = portletContext;
     }
 
     /**
@@ -997,84 +989,84 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         // Dans certaines cas, le nom du portail n'est pas connu
         // cas des stacks server (par exemple, le pre-cahrgement des pages)
         if (portalName != null) {
-  
+
             // Pour prévenir des window en Timeout.
 
-                PortalObject po = PortalObjectUtils.getObject(ctx.getPortalControllerContext(), PortalObjectId.parse("", "/" + portalName, PortalObjectPath.CANONICAL_FORMAT));
+            PortalObject po = PortalObjectUtils.getObject(ctx.getPortalControllerContext(), PortalObjectId.parse("", "/" + portalName, PortalObjectPath.CANONICAL_FORMAT));
 
-                if (requestFilteringPolicy != null) {
-                    policyFilter = requestFilteringPolicy;
+            if (requestFilteringPolicy != null) {
+                policyFilter = requestFilteringPolicy;
+            } else {
+                // Get portal policy filter
+                String sitePolicy = po.getProperty(InternalConstants.PORTAL_PROP_NAME_CMS_REQUEST_FILTERING_POLICY);
+                if (sitePolicy != null) {
+                    if (InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_LOCAL.equals(sitePolicy)) {
+                        policyFilter = InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_LOCAL;
+                    }
                 } else {
-                    // Get portal policy filter
-                    String sitePolicy = po.getProperty(InternalConstants.PORTAL_PROP_NAME_CMS_REQUEST_FILTERING_POLICY);
-                    if (sitePolicy != null) {
-                        if (InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_LOCAL.equals(sitePolicy)) {
-                            policyFilter = InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_LOCAL;
-                        }
-                    } else {
-                        String portalType = po.getProperty(InternalConstants.PORTAL_PROP_NAME_PORTAL_TYPE);
-                        if (InternalConstants.PORTAL_TYPE_SPACE.equals(portalType)) {
-                            policyFilter = InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_LOCAL;
-                        }
+                    String portalType = po.getProperty(InternalConstants.PORTAL_PROP_NAME_PORTAL_TYPE);
+                    if (InternalConstants.PORTAL_TYPE_SPACE.equals(portalType)) {
+                        policyFilter = InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_LOCAL;
                     }
                 }
+            }
 
-                if (InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_LOCAL.equals(policyFilter)) {
-                    // User domains
-                    List<?> domains = PortalObjectUtils.getDomains(ctx.getPortalControllerContext());
+            if (InternalConstants.PORTAL_CMS_REQUEST_FILTERING_POLICY_LOCAL.equals(policyFilter)) {
+                // User domains
+                List<?> domains = PortalObjectUtils.getDomains(ctx.getPortalControllerContext());
 
-                    // CMS paths
-                    List<String> paths;
-                    if (CollectionUtils.isEmpty(domains)) {
-                        if (po == null) {
-                            paths = null;
-                        } else {
-                            Collection<PortalObject> children = po.getChildren(PortalObject.PAGE_MASK);
-                            paths = new ArrayList<>(children.size());
-                            for (PortalObject child : children) {
-                                String path = child.getDeclaredProperty("osivia.cms.basePath");
-                                if (StringUtils.isNotBlank(path)) {
-                                    paths.add(path);
-                                }
-                            }
-                        }
+                // CMS paths
+                List<String> paths;
+                if (CollectionUtils.isEmpty(domains)) {
+                    if (po == null) {
+                        paths = null;
                     } else {
-                        paths = new ArrayList<>(domains.size());
-                        for (Object domain : domains) {
-                            if (domain instanceof String) {
-                                String path = (String) domain;
+                        Collection<PortalObject> children = po.getChildren(PortalObject.PAGE_MASK);
+                        paths = new ArrayList<>(children.size());
+                        for (PortalObject child : children) {
+                            String path = child.getDeclaredProperty("osivia.cms.basePath");
+                            if (StringUtils.isNotBlank(path)) {
                                 paths.add(path);
                             }
                         }
                     }
-
-                    if (CollectionUtils.isNotEmpty(paths)) {
-                        // Path filter builder
-                        StringBuilder builder = new StringBuilder();
-                        builder.append(" AND (");
-
-                        boolean first = true;
-                        for (String path : paths) {
-                            if (first) {
-                                first = false;
-                            } else {
-                                builder.append(" OR ");
-                            }
-
-                            builder.append("ecm:path STARTSWITH '").append(path).append("'");
+                } else {
+                    paths = new ArrayList<>(domains.size());
+                    for (Object domain : domains) {
+                        if (domain instanceof String) {
+                            String path = (String) domain;
+                            paths.add(path);
                         }
-
-                        builder.append(") ");
-
-                        requestFilter += builder.toString();
                     }
                 }
 
-                String extraFilter = this.getExtraRequestFilter(ctx, requestFilteringPolicy);
-                if (extraFilter != null) {
-                    requestFilter += " OR (" + extraFilter + ")";
+                if (CollectionUtils.isNotEmpty(paths)) {
+                    // Path filter builder
+                    StringBuilder builder = new StringBuilder();
+                    builder.append(" AND (");
+
+                    boolean first = true;
+                    for (String path : paths) {
+                        if (first) {
+                            first = false;
+                        } else {
+                            builder.append(" OR ");
+                        }
+
+                        builder.append("ecm:path STARTSWITH '").append(path).append("'");
+                    }
+
+                    builder.append(") ");
+
+                    requestFilter += builder.toString();
                 }
-            
+            }
+
+            String extraFilter = this.getExtraRequestFilter(ctx, requestFilteringPolicy);
+            if (extraFilter != null) {
+                requestFilter += " OR (" + extraFilter + ")";
+            }
+
         }
 
         // Insertion du filtre avant le order
@@ -1258,8 +1250,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
             String anchor = StringUtils.substringAfter(url, "#");
 
 
-
-            
             // Context path
             String contextPath = PortalObjectUtils.getPortalContextPath(portalControllerContext);
 
@@ -1267,7 +1257,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
                 // Portal relative URL
 
                 // Portal URL
-                String portalUrl =  relativeUrl;
+                String portalUrl = relativeUrl;
                 if (StringUtils.isNotBlank(anchor)) {
                     portalUrl += "#" + anchor;
                 }
@@ -1612,70 +1602,32 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     /**
      * {@inheritDoc}
      */
-    
+
     @Override
+    @Deprecated
     public Link getUserAvatar(String username) {
-        return this.getUserAvatar(username, true);
-    }
-    
+        Person person = this.personService.getPerson(username);
 
+        return this.getUserAvatar(person);
+    }
+
+
+    @Deprecated
     public Link getUserAvatar(String username, boolean checkCache) {
-        // URL
-        StringBuilder url = new StringBuilder();
-
-        // Avatar modules
-        List<AvatarModule> modules = this.pluginManager.getAvatarModules();
-        if (CollectionUtils.isNotEmpty(modules)) {
-            Iterator<AvatarModule> iterator = modules.iterator();
-            while ((url.length() == 0) && iterator.hasNext()) {
-                // Avatar module
-                AvatarModule module = iterator.next();
-
-                // Customized avatar URL
-                String customizedUrl = module.getUrl(username);
-                if (StringUtils.isNotEmpty(customizedUrl)) {
-                    url.append(customizedUrl);
-                }
-            }
-        }
-
-        if (url.length() == 0) {
-            AvatarInfo avatar = AvatarUtils.getAvatar(username, checkCache);
-            
-            String genericResource = System.getProperty("osivia.avatar.generic.resource");
-            
-            if(StringUtils.isNotEmpty(genericResource) && (avatar == null || BooleanUtils.isTrue(avatar.getGenericResource()))) {
-                url.append(genericResource);
-            }   else    {
-                // timestamp is concated in the url to control the client cache
-                url.append(getResourceContextPath()+AVATAR_SERVLET);
-            try {
-                url.append(URLEncoder.encode(username, CharEncoding.UTF_8));
-            } catch (UnsupportedEncodingException e) {
-                this.log.error(e);
-            }
-                if( avatar != null) {
-                    url.append("&t=");
-                    url.append(avatar.getTimeStamp());
-                }
-            }
-        }
-
-        return new Link(url.toString(), false);
+        throw new UnsupportedOperationException();
     }
 
-    
+
     @Override
     public Link getUserAvatar(Person person) {
-        Link link;
+        Link avatar;
         if (person == null) {
-            link = null;
+            avatar = null;
         } else {
-            String userId = person.getUid();
-            link = this.getUserAvatar(userId);
+            avatar = person.getAvatar();
         }
 
-        return link;
+        return avatar;
     }
 
 
@@ -1683,11 +1635,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * {@inheritDoc}
      */
     @Override
-    public Link getUserAvatar(CMSServiceCtx cmsCtx, String username) throws CMSException {
-        // PersonService user list : don't check avatar
-        // Can take more then one minute for a list
-        return this.getUserAvatar(username, false);
-
+    @Deprecated
+    public Link getUserAvatar(CMSServiceCtx cmsCtx, String username) {
+        throw new UnsupportedOperationException();
     }
 
 
@@ -1695,8 +1645,9 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * {@inheritDoc}
      */
     @Override
+    @Deprecated
     public String refreshUserAvatar(String username) {
-        return AvatarUtils.refreshUserAvatar(username);
+        throw new UnsupportedOperationException();
     }
 
 
@@ -1704,8 +1655,21 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * {@inheritDoc}
      */
     @Override
+    @Deprecated
     public String refreshUserAvatar(CMSServiceCtx cmsCtx, String username) {
-        return this.refreshUserAvatar(username);
+        throw new UnsupportedOperationException();
+    }
+
+
+    @Override
+    public String getAvatarServletUrlPrefix() {
+        return AvatarServlet.SERVLET_URL_PREFIX;
+    }
+
+
+    @Override
+    public String getAvatarDefaultSegment() {
+        return AvatarServlet.DEFAULT_SEGMENT;
     }
 
 
@@ -1713,7 +1677,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
      * Checks if current doc is in edition state.
      *
      * @return true, if is in page edition state
-     * @throws CMSException the CMS exception
      */
     public boolean isPathInLiveState(CMSServiceCtx cmsCtx, Document doc) {
         if ("1".equals(cmsCtx.getDisplayLiveVersion())) {
@@ -1946,23 +1909,23 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         return new Link(src, false);
     }
 
-    
+
     /**
      * Binary servlet URL.
      */
-    public String getBinaryServlet()   {
-        return getResourceContextPath()+BINARY_SERVLET;
+    public String getBinaryServlet() {
+        return getResourceContextPath() + BINARY_SERVLET;
     }
-    
-    
+
+
     /**
      * Binary servlet URL.
      */
     @Override
-    public String getResourceContextPath()   {
+    public String getResourceContextPath() {
         return BinaryServlet.contextPath;
     }
-    
+
 
     /**
      * Gets the user delegation.
@@ -2015,8 +1978,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
     }
 
 
-
-
     /**
      * Get default taskbar items.
      *
@@ -2037,7 +1998,7 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
 
         // Search
         TaskbarItem search = factory.createStapledTaskbarItem(ITaskbarService.SEARCH_TASK_ID, "SEARCH_TASK", "glyphicons glyphicons-search",
-                new UniversalID( System.getProperty("osivia.repository.default"), "DEFAULT_TEMPLATES_WORKSPACE_SEARCH"));
+                new UniversalID(System.getProperty("osivia.repository.default"), "DEFAULT_TEMPLATES_WORKSPACE_SEARCH"));
         factory.hide(search, true);
         taskbarItems.add(search);
 
@@ -2161,7 +2122,6 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         return navigationPanelPlayers;
     }
 
-  
 
     /**
      * Getter for pluginManager.
@@ -2338,5 +2298,5 @@ public class DefaultCMSCustomizer implements INuxeoCustomizer {
         return this.pluginManager.getDocumentModules(type);
     }
 
-    
+
 }

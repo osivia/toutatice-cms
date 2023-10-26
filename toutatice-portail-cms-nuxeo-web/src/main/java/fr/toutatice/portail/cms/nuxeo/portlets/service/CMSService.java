@@ -2631,13 +2631,12 @@ public class CMSService implements ICMSService {
     }
 
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
+    @Deprecated
     public String refreshUserAvatar(CMSServiceCtx cmsCtx, String username) {
-        return this.customizer.refreshUserAvatar(cmsCtx, username);
+        throw new UnsupportedOperationException();
     }
+
 
     /**
      * {@inheritDoc}

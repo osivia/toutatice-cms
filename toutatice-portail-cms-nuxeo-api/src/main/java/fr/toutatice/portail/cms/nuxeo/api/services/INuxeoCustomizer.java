@@ -28,13 +28,13 @@ import fr.toutatice.portail.cms.nuxeo.api.portlet.IPortletModule;
 import org.nuxeo.ecm.automation.client.model.Document;
 import org.osivia.portal.api.cms.DocumentType;
 import org.osivia.portal.api.cms.FileMimeType;
+import org.osivia.portal.api.directory.v2.model.Person;
 import org.osivia.portal.api.player.Player;
 import org.osivia.portal.api.set.SetType;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.core.cms.CMSException;
 import org.osivia.portal.core.cms.CMSServiceCtx;
 import org.osivia.portal.core.customization.ICustomizationService;
-import org.osivia.portal.api.directory.v2.model.Person;
 
 import javax.portlet.PortletContext;
 import javax.portlet.PortletRequest;
@@ -218,7 +218,6 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      */
     INuxeoCommentsService getNuxeoCommentsService();
 
-    
 
     /**
      * Get user avatar link.
@@ -229,16 +228,14 @@ public interface INuxeoCustomizer extends HttpSessionListener {
     Link getUserAvatar(Person person);
 
 
-    
-    
     /**
      * Get the user avatar.
      *
      * @param username username
      * @return the user avatar
-     * @throws CMSException the CMS exception
      */
     Link getUserAvatar(String username);
+
 
     /**
      * Get the user avatar.
@@ -252,14 +249,16 @@ public interface INuxeoCustomizer extends HttpSessionListener {
     @Deprecated
     Link getUserAvatar(CMSServiceCtx cmsCtx, String username) throws CMSException;
 
+
     /**
      * Refresh the user avatar.
      *
-     * @param cmsCtx   cms context
      * @param username username
      * @return the timestamp associated with the refresh event
      */
+    @Deprecated
     String refreshUserAvatar(String username);
+
 
     /**
      * Refresh the user avatar.
@@ -271,6 +270,23 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      */
     @Deprecated
     String refreshUserAvatar(CMSServiceCtx cmsCtx, String username);
+
+
+    /**
+     * Get avatar servlet URL prefix.
+     *
+     * @return URL prefix
+     */
+    String getAvatarServletUrlPrefix();
+
+
+    /**
+     * Get avatar default segment.
+     *
+     * @return segment
+     */
+    String getAvatarDefaultSegment();
+
 
     /**
      * Get templates list.
@@ -338,8 +354,6 @@ public interface INuxeoCustomizer extends HttpSessionListener {
     Object executeNuxeoCommand(CMSServiceCtx cmsContext, INuxeoCommand command) throws CMSException;
 
 
-
-
     /**
      * Gets the CMS file browser.
      *
@@ -389,14 +403,14 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @return document modules
      */
     List<IPortletModule> getDocumentModules(String type);
-    
-    
+
+
     /**
      * Gets the resource context path (cms-nuxeo-web)
      *
      * @return the resource context path
      */
-    public String getResourceContextPath() ;
+    public String getResourceContextPath();
 
     /**
      * Gets the CMS portlet context.
@@ -404,6 +418,6 @@ public interface INuxeoCustomizer extends HttpSessionListener {
      * @return the portlet context
      */
     PortletContext getPortletContext();
-    
+
 
 }
