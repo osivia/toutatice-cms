@@ -146,6 +146,9 @@ public class HttpConnector implements Connector {
         for (Map.Entry<String, String> entry : request.entrySet()) {
             httpReq.setHeader(entry.getKey(), entry.getValue());
         }
+
+        httpReq.setHeader("Connection","close");
+
         //HttpResponse resp = http.execute(httpReq, ctx);
         HttpResponse resp = getTimeoutRequest(httpReq);
         HttpEntity entity = resp.getEntity();
