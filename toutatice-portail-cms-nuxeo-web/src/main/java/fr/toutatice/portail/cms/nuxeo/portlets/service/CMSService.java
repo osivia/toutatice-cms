@@ -13,21 +13,11 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.io.File;
+import java.text.ParseException;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 import javax.naming.Name;
@@ -61,6 +51,7 @@ import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.PortalException;
+import org.osivia.portal.api.batch.IBatchService;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
 import org.osivia.portal.api.cms.DocumentContext;
@@ -211,6 +202,10 @@ public class CMSService implements ICMSService {
     private final StatisticsCmsServiceDelegation statisticsServiceDelegation;
     /** Statistics CMS service delegation. */
     private final UserPreferencesDelegation prefsDelegation;
+    /** name of the temp files used by the Binary servlet */
+    private final Map<String, Date> cachedTempFiles;
+    /** Delay after temp files deletion */
+    private final long cachedTempFilesDelay;
 
 
     /**
@@ -229,6 +224,21 @@ public class CMSService implements ICMSService {
         this.documentsDiscoveryService = DocumentsDiscoveryService.getInstance(this);
         this.statisticsServiceDelegation = new StatisticsCmsServiceDelegation();
         this.prefsDelegation = new UserPreferencesDelegation();
+
+        // Remove old files created after 5 minutes
+        cachedTempFiles = new ConcurrentHashMap<>();
+        String delay = System.getProperty("nuxeo.tempfiles.delay", "300");
+        cachedTempFilesDelay = Long.parseLong(delay) * 1000;
+
+        IBatchService batchService = Locator.findMBean(IBatchService.class, IBatchService.MBEAN_NAME);
+        try {
+            batchService.addBatch(new CleanTempFilesBatch());
+        } catch (ParseException e) {
+            LOG.error(e);
+        } catch (PortalException e) {
+            LOG.error(e);
+        }
+
     }
 
 
@@ -594,6 +604,20 @@ public class CMSService implements ICMSService {
             content = this.getAttachedPicture(cmsCtx, docPath, parameter);
         } else if ("picture".equals(type)) {
             content = this.getPicture(cmsCtx, docPath, parameter);
+        }
+
+
+        if(content.getFile() != null) {
+
+            if(!(cachedTempFiles.containsKey(content.getFile().getAbsolutePath()))) {
+                cachedTempFiles.put(content.getFile().getAbsolutePath(), new Date());
+
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("put " + docPath + " (" + parameter + ") " + content.getFile().getAbsolutePath());
+                    LOG.debug("cachedTempFiles current size is " + cachedTempFiles.size());
+                }
+            }
+
         }
 
         return content;
@@ -3795,6 +3819,35 @@ public class CMSService implements ICMSService {
         properties.put(EditorService.WINDOW_PROPERTY_PREFIX + "path", nuxeoController.getContentPath());
 
         return properties;
+    }
+
+
+    @Override
+    public void cleanTempFiles() {
+
+        Date current = new Date();
+        List<String> deletedFiles = new ArrayList<>();
+
+        for(Entry<String, Date> file : cachedTempFiles.entrySet()) {
+
+            long l = current.getTime() - file.getValue().getTime();
+            if(l > cachedTempFilesDelay) {
+                File fileToDelete = new File(file.getKey());
+                boolean deleted = fileToDelete.delete();
+                deletedFiles.add(file.getKey());
+            }
+
+        }
+
+        for(String deletedFile : deletedFiles) {
+            cachedTempFiles.remove(deletedFile);
+            if(LOG.isDebugEnabled()) {
+                LOG.debug("remove " + deletedFile);
+            }
+        }
+        if(LOG.isDebugEnabled()) {
+            LOG.debug("cachedTempFiles current size is " + cachedTempFiles.size());
+        }
     }
 
 }
