@@ -19,10 +19,10 @@ import org.apache.commons.io.IOUtils;
 import org.nuxeo.ecm.automation.client.Constants;
 import org.nuxeo.ecm.automation.client.OperationRequest;
 import org.nuxeo.ecm.automation.client.Session;
-import org.nuxeo.ecm.automation.client.model.Blob;
 import org.nuxeo.ecm.automation.client.model.Document;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
+import org.nuxeo.ecm.automation.client.model.FileBlob;
 
 
 /**
@@ -49,15 +49,25 @@ public class GetPublishedDocumentsInfosCommand implements INuxeoCommand {
         request.setHeader(Constants.HEADER_NX_SCHEMAS, "*");
         request.set("readFilter", readFilter);
         request.setInput(document);
-        
-        Blob publishedDocsInfos = (Blob) request.execute();
-        if(publishedDocsInfos != null){
-            String fileContent = IOUtils.toString(publishedDocsInfos.getStream(), "UTF-8");
-            return JSONArray.fromObject(fileContent);
-        } else {
-            return new JSONArray();
+
+        FileBlob publishedDocsInfos = null;
+        try {
+            publishedDocsInfos = (FileBlob) request.execute();
+            if(publishedDocsInfos != null){
+                String fileContent = IOUtils.toString(publishedDocsInfos.getStream(), "UTF-8");
+                return JSONArray.fromObject(fileContent);
+            } else {
+                return new JSONArray();
+            }
         }
-        
+        finally {
+            if(publishedDocsInfos != null && publishedDocsInfos.getFile() != null) {
+                publishedDocsInfos.getFile().delete();
+            }
+        }
+
+
+
     }
 
     /**

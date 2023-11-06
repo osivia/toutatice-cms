@@ -23,8 +23,8 @@ import java.io.InputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.CountingOutputStream;
 import org.nuxeo.ecm.automation.client.Session;
-import org.nuxeo.ecm.automation.client.model.Blob;
 import org.nuxeo.ecm.automation.client.model.Document;
+import org.nuxeo.ecm.automation.client.model.FileBlob;
 import org.osivia.portal.core.cms.CMSBinaryContent;
 
 import fr.toutatice.portail.cms.nuxeo.api.INuxeoCommand;
@@ -45,10 +45,10 @@ public class InternalPictureCommand implements INuxeoCommand {
 	@Override
     public Object execute( Session session)	throws Exception {
 
-		Blob blob = null;
+		FileBlob blob = null;
 
 		try	{
-			blob = (Blob) session.newRequest("Blob.Get").setInput(containerDoc).set("xpath",
+			blob = (FileBlob) session.newRequest("Blob.Get").setInput(containerDoc).set("xpath",
 				"ttc:images/item[" + pictureIndex + "]/file").execute();
 		} catch( Exception e){
 			// Le not found n'est pas traité pour les blob
@@ -73,6 +73,11 @@ public class InternalPictureCommand implements INuxeoCommand {
 		} finally {
             IOUtils.closeQuietly(in);
             IOUtils.closeQuietly(cout);
+
+			if(blob != null & blob.getFile() != null) {
+				blob.getFile().delete();
+			}
+
 		}
 
 		CMSBinaryContent content = new CMSBinaryContent();
