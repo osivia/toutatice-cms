@@ -17,6 +17,7 @@ import org.osivia.portal.api.cms.UpdateScope;
 import org.osivia.portal.api.cms.exception.CMSException;
 import org.osivia.portal.api.cms.exception.DocumentNotFoundException;
 import org.osivia.portal.api.cms.model.Document;
+import org.osivia.portal.api.cms.model.ModuleRef;
 import org.osivia.portal.api.cms.model.NavigationItem;
 import org.osivia.portal.api.cms.model.Profile;
 import org.osivia.portal.api.cms.repository.BaseUserRepository;
@@ -590,6 +591,12 @@ public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepo
             doc.getProperties().remove("ttc:pageTemplate");
         
         updateDocument(id, doc);
+        
+    }
+
+    @Override
+    public void addPage(String id, String name, String parentId, Map<String, Object> properties, List<ModuleRef> modules, List<String> acls) throws CMSException {
+        // TODO Auto-generated method stub
         
     }
 
