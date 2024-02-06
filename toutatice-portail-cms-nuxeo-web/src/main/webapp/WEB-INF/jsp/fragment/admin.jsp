@@ -17,8 +17,7 @@
 </c:if>
 
 
-<div class="container">
-    <form action="${selectURL}" method="post" class="form-horizontal" role="form">
+<div class="container fragment-edition">
         <fieldset>
             <legend><op:translate key="FRAGMENT_TYPE_SELECT" /></legend>
             
@@ -26,7 +25,7 @@
 	        <div class="form-group">
 	            <label for="fragment-type" class="control-label col-sm-3"><op:translate key="FRAGMENT_TYPE" /></label>
 	            <div class="col-sm-9">
-	                <select id="fragment-type" name="fragmentTypeId" onchange="this.form.submit()" class="form-control">
+	                <select id="fragment-type" name="fragmentTypeId" class="form-select fragment-type" class="form-control">
 	                    <option value=""></option>
 	                
 	                    <c:forEach var="type" items="${fragmentTypes}">
@@ -38,17 +37,11 @@
 	                        <option value="${type.key}" ${selected}>${type.label}</option>
 	                    </c:forEach>
 	                </select>
+	                <a href="${selectURL}" class="selectLink d-none"></a> 
 	            </div>
 	        </div>
 	        
-	        <!-- Select button -->
-            <div class="form-group hidden-script">
-                <div class="col-sm-offset-3 col-sm-9">
-                    <button type="submit" class="btn btn-secondary btn-primary"><op:translate key="SELECT" /></button>
-                </div>
-            </div>
         </fieldset>
-    </form>
     
     <c:if test="${not empty fragmentType.key}">
         <form action="${saveAdminURL}" method="post" class="form-horizontal" role="form">

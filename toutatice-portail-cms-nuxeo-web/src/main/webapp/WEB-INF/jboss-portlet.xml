@@ -187,6 +187,11 @@
         <transaction>
             <trans-attribute>Required</trans-attribute>
         </transaction>
+
+	    <header-content>
+	        <script type="text/javascript" src="/js/fragment.min.js"></script>
+	    </header-content>
+
         
         <portlet-info>
             <icon>
