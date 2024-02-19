@@ -16,6 +16,10 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.list;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -27,6 +31,7 @@ import java.util.List;
 
 import javax.portlet.PortletRequest;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.commons.lang.time.DateUtils;
@@ -314,52 +319,40 @@ public class NXQLFormater {
      * @return formatted advanced search
      */
     public String formatAdvancedSearch(List<String> searchValues) {
-        StringBuilder builder = new StringBuilder();
+        StringBuilder builder = new StringBuilder("ecm:fulltext= '");
 
-        Iterator<String> itSearchValues = searchValues.iterator();
-        while (itSearchValues.hasNext()) {
-            builder.append(formatAdvancedSearch(itSearchValues.next()));
-            // Multi valued selector
-            if (itSearchValues.hasNext()) {
-                builder.append(" AND ");
+        Iterator<String> itKeyWords = searchValues.iterator();
+
+        while (itKeyWords.hasNext()) {
+
+            String decode = StringEscapeUtils.unescapeHtml(itKeyWords.next());
+
+            builder.append(decode);
+            if (itKeyWords.hasNext()) {
+                builder.append(" OR ");
             }
+
+
         }
 
+        builder.append("'");
         return builder.toString();
+
     }
     
 
     /**
      * Format advanced search.
-     * 
+     *
      * @param keyWords key words
      * @return formatted advanced search
      */
     public String formatAdvancedSearch(String keyWords) {
-        StringBuilder builder = new StringBuilder();
 
         String[] keyWds = StringUtils.split(keyWords);
-        Iterator<String> itKeyWords = Arrays.asList(keyWds).iterator();
+        List<String> itKeyWords = Arrays.asList(keyWds);
+        return formatAdvancedSearch(itKeyWords);
 
-        while (itKeyWords.hasNext()) {
-            String keyWord = StringUtils.replace(itKeyWords.next(), "'", "\\'");
-            keyWord = Normalizer.normalize(keyWord, Normalizer.Form.NFD);
-            keyWord = keyWord.replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
-            // Remove special chars
-            keyWord = keyWord.replaceAll("[^A-Za-z0-9 ]", " ");
-
-            builder.append("(ecm:fulltext = '");
-            builder.append(keyWord);
-            builder.append("' OR /*+ES: INDEX(dc:title.lowercase) OPERATOR(query_string) */ dc:title = '");
-            builder.append(keyWord);
-            builder.append("*')");
-
-            if (itKeyWords.hasNext()) {
-                builder.append(" AND ");
-            }
-        }
-
-        return builder.toString();
     }
 
 }
