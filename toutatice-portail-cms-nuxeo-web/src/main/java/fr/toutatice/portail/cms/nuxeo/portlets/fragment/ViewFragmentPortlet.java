@@ -30,10 +30,14 @@ import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 
 import org.apache.commons.lang.StringUtils;
+import org.osivia.portal.api.apps.App;
+import org.osivia.portal.api.blacklist.IBlackListService;
+import org.osivia.portal.api.blacklist.IBlackListableElement;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.windows.PortalWindow;
 import org.osivia.portal.api.windows.WindowFactory;
+import org.springframework.context.annotation.Bean;
 
 import fr.toutatice.portail.cms.nuxeo.api.CMSPortlet;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
@@ -62,6 +66,10 @@ public class ViewFragmentPortlet extends CMSPortlet {
     /** CMS customizer. */
     private INuxeoCustomizer customizer;
 
+    
+    private IBlackListService blackListService;
+       
+  
 
     /**
      * Default constructor.
@@ -82,6 +90,8 @@ public class ViewFragmentPortlet extends CMSPortlet {
         INuxeoService nuxeoService = Locator.findMBean(INuxeoService.class, "osivia:service=NuxeoService");
         // CMS customizer
         this.customizer = nuxeoService.getCMSCustomizer();
+        
+        blackListService = Locator.getService(IBlackListService.class);
     }
 
 
@@ -193,6 +203,17 @@ public class ViewFragmentPortlet extends CMSPortlet {
                 filteredFragmentTypes.add(fragmentType);
             }
         }
+        
+        // Filter by host
+        filteredFragmentTypes = blackListService.filterByBlacklist(portalControllerContext, "fragment", filteredFragmentTypes, new IBlackListableElement<FragmentType>() {
+             @Override
+            public String getId(FragmentType fragment) {
+                 return fragment.getKey();
+            }
+        });
+        
+
+        
         request.setAttribute("fragmentTypes", filteredFragmentTypes);
 
         response.setContentType("text/html");

@@ -56,6 +56,8 @@ import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.PortalException;
+import org.osivia.portal.api.blacklist.IBlackListService;
+import org.osivia.portal.api.blacklist.IBlackListableElement;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
@@ -81,6 +83,7 @@ import fr.toutatice.portail.cms.nuxeo.api.PortletErrorHandler;
 import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
 import fr.toutatice.portail.cms.nuxeo.api.domain.DocumentDTO;
+import fr.toutatice.portail.cms.nuxeo.api.domain.FragmentType;
 import fr.toutatice.portail.cms.nuxeo.api.domain.ListTemplate;
 import fr.toutatice.portail.cms.nuxeo.api.portlet.IPortletModule;
 import fr.toutatice.portail.cms.nuxeo.api.portlet.IPrivilegedModule;
@@ -129,7 +132,9 @@ public class ViewListPortlet extends ViewList {
     /** Taskbar service. */
     private final ITaskbarService taskbarService;
 
+    /** Blacklist service */
 
+    private IBlackListService blackListService;
     /**
      * Constructor.
      */
@@ -140,6 +145,8 @@ public class ViewListPortlet extends ViewList {
         this.nuxeoService = Locator.findMBean(INuxeoService.class, INuxeoService.MBEAN_NAME);
         // Taskbar service
         this.taskbarService = Locator.findMBean(ITaskbarService.class, ITaskbarService.MBEAN_NAME);
+        
+        blackListService = Locator.getService(IBlackListService.class);
     }
 
 
@@ -497,6 +504,10 @@ public class ViewListPortlet extends ViewList {
         try {
             // Nuxeo controller
             NuxeoController nuxeoController = new NuxeoController(request, response, this.getPortletContext());
+            
+            // Portal controller context
+            PortalControllerContext portalControllerContext = nuxeoController.getPortalCtx();
+            
             // Current window
             PortalWindow window = WindowFactory.getWindow(request);
 
@@ -518,7 +529,17 @@ public class ViewListPortlet extends ViewList {
             request.setAttribute("scopes", nuxeoController.formatScopeList(configuration.getScope()));
 
             // Templates
-            request.setAttribute("templates", customizer.getListTemplates(request.getLocale()));
+            List<ListTemplate> templates = customizer.getListTemplates(request.getLocale());
+            
+            // Filter by host
+            templates = blackListService.filterByBlacklist(portalControllerContext, "list", templates, new IBlackListableElement<ListTemplate>() {
+                 @Override
+                public String getId(ListTemplate template) {
+                     return template.getKey();
+                }
+            });
+            
+            request.setAttribute("templates", templates);
             
             //Set types
             request.setAttribute("setTypes", customizer.getSetTypes());
