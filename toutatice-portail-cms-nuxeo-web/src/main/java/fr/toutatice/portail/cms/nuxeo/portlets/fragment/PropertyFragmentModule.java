@@ -144,24 +144,20 @@ public class PropertyFragmentModule extends FragmentModule {
                     propertyValue = document.getProperties().getString(propertyName);
                 }
 
-                if (StringUtils.isNotBlank(propertyValue)) {
-                    if (this.html) {
-                        // Transform HTML content
-                        propertyValue = nuxeoController.transformHTMLContent(propertyValue);
-                    } else if ("dc:description".equals(propertyName)) {
-                        // Add CSS classes
-                        propertyValue = "<div class=\"text-left text-pre-wrap\">" + propertyValue + "</div>";
-                    }
-
-                    request.setAttribute("content", propertyValue);
-
-                    if (cmsMenuDisplay) {
-                        nuxeoController.insertContentMenuBarItems();
-                    }
-                } else {
-                    // Empty property value
-                    request.setAttribute("osivia.emptyResponse", "1");
+                if (this.html) {
+                    // Transform HTML content
+                    propertyValue = nuxeoController.transformHTMLContent(propertyValue);
+                } else if ("dc:description".equals(propertyName)) {
+                    // Add CSS classes
+                    propertyValue = "<div class=\"text-left text-pre-wrap\">" + propertyValue + "</div>";
                 }
+
+                request.setAttribute("content", propertyValue);
+
+                if (cmsMenuDisplay) {
+                    nuxeoController.insertContentMenuBarItems();
+                }
+
             } else {
                 request.setAttribute("messageKey", "FRAGMENT_MESSAGE_PROPERTY_UNDEFINED");
             }
