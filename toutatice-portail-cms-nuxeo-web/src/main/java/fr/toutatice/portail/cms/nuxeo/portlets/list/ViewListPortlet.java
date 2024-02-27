@@ -56,8 +56,8 @@ import org.nuxeo.ecm.automation.client.model.PropertyList;
 import org.nuxeo.ecm.automation.client.model.PropertyMap;
 import org.osivia.portal.api.Constants;
 import org.osivia.portal.api.PortalException;
-import org.osivia.portal.api.blacklist.IBlackListService;
-import org.osivia.portal.api.blacklist.IBlackListableElement;
+import org.osivia.portal.api.components.IComponentService;
+import org.osivia.portal.api.components.IComponentElement;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.internationalization.Bundle;
 import org.osivia.portal.api.internationalization.IBundleFactory;
@@ -134,7 +134,7 @@ public class ViewListPortlet extends ViewList {
 
     /** Blacklist service */
 
-    private IBlackListService blackListService;
+    private IComponentService componentService;
     /**
      * Constructor.
      */
@@ -146,7 +146,7 @@ public class ViewListPortlet extends ViewList {
         // Taskbar service
         this.taskbarService = Locator.findMBean(ITaskbarService.class, ITaskbarService.MBEAN_NAME);
         
-        blackListService = Locator.getService(IBlackListService.class);
+        componentService = Locator.getService(IComponentService.class);
     }
 
 
@@ -532,7 +532,7 @@ public class ViewListPortlet extends ViewList {
             List<ListTemplate> templates = customizer.getListTemplates(request.getLocale());
             
             // Filter by host
-            templates = blackListService.filterByBlacklist(portalControllerContext, "list", templates, new IBlackListableElement<ListTemplate>() {
+            templates = componentService.filterByComponentList(portalControllerContext, "list", templates, new IComponentElement<ListTemplate>() {
                  @Override
                 public String getId(ListTemplate template) {
                      return template.getKey();

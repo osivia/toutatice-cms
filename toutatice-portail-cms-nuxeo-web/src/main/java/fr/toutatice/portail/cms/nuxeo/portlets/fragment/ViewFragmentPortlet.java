@@ -31,8 +31,8 @@ import javax.portlet.WindowState;
 
 import org.apache.commons.lang.StringUtils;
 import org.osivia.portal.api.apps.App;
-import org.osivia.portal.api.blacklist.IBlackListService;
-import org.osivia.portal.api.blacklist.IBlackListableElement;
+import org.osivia.portal.api.components.IComponentService;
+import org.osivia.portal.api.components.IComponentElement;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.locator.Locator;
 import org.osivia.portal.api.windows.PortalWindow;
@@ -67,7 +67,7 @@ public class ViewFragmentPortlet extends CMSPortlet {
     private INuxeoCustomizer customizer;
 
     
-    private IBlackListService blackListService;
+    private IComponentService componentService;
        
   
 
@@ -91,7 +91,7 @@ public class ViewFragmentPortlet extends CMSPortlet {
         // CMS customizer
         this.customizer = nuxeoService.getCMSCustomizer();
         
-        blackListService = Locator.getService(IBlackListService.class);
+        componentService = Locator.getService(IComponentService.class);
     }
 
 
@@ -205,7 +205,7 @@ public class ViewFragmentPortlet extends CMSPortlet {
         }
         
         // Filter by host
-        filteredFragmentTypes = blackListService.filterByBlacklist(portalControllerContext, "fragment", filteredFragmentTypes, new IBlackListableElement<FragmentType>() {
+        filteredFragmentTypes = componentService.filterByComponentList(portalControllerContext, "fragment", filteredFragmentTypes, new IComponentElement<FragmentType>() {
              @Override
             public String getId(FragmentType fragment) {
                  return fragment.getKey();
