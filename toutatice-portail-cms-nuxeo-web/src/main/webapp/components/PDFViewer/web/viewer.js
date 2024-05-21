@@ -7601,6 +7601,7 @@ function configure(PDFJS) {
   PDFJS.workerSrc = '../build/pdf.worker.js';
   PDFJS.cMapUrl = '../web/cmaps/';
   PDFJS.cMapPacked = true;
+  PDFJS.isEvalSupported = false;
 }
 
 var DefaultExernalServices = {
