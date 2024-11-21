@@ -77,6 +77,12 @@
     </xsl:template>
     
     
+    <xsl:template match="DIV[@class = 'portal-empty']">
+        <xsl:attribute name="class"><xsl:value-of select="bridge:portalEmpty($bridge)" /></xsl:attribute>
+        <xsl:apply-templates select="@*|node()" />
+    </xsl:template>
+    
+    
     <xsl:template match="VIDEO[@class = 'enlargeable']">
         <xsl:element name="div">
             <xsl:attribute name="class">hidden</xsl:attribute>

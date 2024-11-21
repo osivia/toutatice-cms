@@ -148,6 +148,11 @@ public class PropertyFragmentModule extends FragmentModule {
                     if (this.html) {
                         // Transform HTML content
                         propertyValue = nuxeoController.transformHTMLContent(propertyValue);
+                        if( nuxeoController.getRequest() != null)   {
+                            if( BooleanUtils.isTrue((Boolean) nuxeoController.getRequest().getAttribute("osivia.portal.wysiwig.emptyClass")))  {
+                                request.setAttribute("osivia.emptyResponse", "1");  
+                            }
+                        }
                     } else if ("dc:description".equals(propertyName)) {
                         // Add CSS classes
                         propertyValue = "<div class=\"text-left text-pre-wrap\">" + propertyValue + "</div>";

@@ -252,6 +252,14 @@ public class XSLFunctions {
             return this.rewrite(link, true);
         }
     }
+    
+    
+    
+    public String portalEmpty() {
+        nuxeoController.getPortalCtx().getRequest().setAttribute("osivia.portal.wysiwig.emptyClass", Boolean.TRUE);
+        
+        return("portal-empty");
+    }
 
     public String getBasePath() {
         // TODO rajouter une fonction dans portalURLFactory pour récupérer le BASE_PATH (avec /portal)
