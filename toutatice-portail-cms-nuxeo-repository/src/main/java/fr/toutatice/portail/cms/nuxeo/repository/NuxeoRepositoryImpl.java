@@ -277,6 +277,15 @@ public class NuxeoRepositoryImpl extends BaseUserRepository implements NuxeoRepo
                     throw new DocumentNotFoundException();
                 }
             }
+            
+            // non published fragement
+            if( isPreviewRepository() == false) {
+                if(res.getPublishSpacePath() != null && res.isLiveSpace() == false && res.isPublished() == false) {
+                    throw new DocumentNotFoundException();
+                }
+            }
+            
+            
 
 
             if (!res.isPublished())
