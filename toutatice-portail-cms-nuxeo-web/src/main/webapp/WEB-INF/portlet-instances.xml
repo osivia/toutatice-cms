@@ -22,6 +22,12 @@
                     <unchecked />
                 </policy-permission>
             </security-constraint>
+            <preferences>
+                <preference>
+                    <name>cms_cache_aware</name>
+                    <value>true</value>
+                </preference>
+            </preferences>            
         </instance>
     </deployment>
 
@@ -43,6 +49,12 @@
                     <unchecked />
                 </policy-permission>
             </security-constraint>
+            <preferences>
+                <preference>
+                    <name>cms_cache_aware</name>
+                    <value>true</value>
+                </preference>
+            </preferences>
         </instance>
     </deployment>
 
@@ -63,6 +75,12 @@
                     <unchecked />
                 </policy-permission>
             </security-constraint>
+            <preferences>
+                <preference>
+                    <name>cms_cache_aware</name>
+                    <value>true</value>
+                </preference>
+            </preferences>
         </instance>
     </deployment>
  <!--    
