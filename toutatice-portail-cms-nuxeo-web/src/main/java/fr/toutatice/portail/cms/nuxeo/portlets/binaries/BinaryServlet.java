@@ -51,6 +51,7 @@ import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoException;
 import fr.toutatice.portail.cms.nuxeo.api.ResourceUtil;
 import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
+import org.springframework.http.MediaType;
 
 
 /**
@@ -193,6 +194,11 @@ public class BinaryServlet extends HttpServlet {
                 nuxeoController.setDisplayContext("downloadVersion");
                 // Path is an uuid here
                 content = nuxeoController.fetchFileContent(path, fieldName);
+            }
+
+            // Fix SVG MIME type: Nuxeo saves SVG content as plain text
+            if (MediaType.TEXT_PLAIN_VALUE.equals(content.getMimeType()) && StringUtils.endsWith(content.getName(), ".svg")) {
+                content.setMimeType("image/svg+xml");
             }
 
             if (content.getStream() != null) {
