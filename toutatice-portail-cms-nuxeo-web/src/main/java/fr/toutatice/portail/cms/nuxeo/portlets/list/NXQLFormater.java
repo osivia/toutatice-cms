@@ -16,36 +16,53 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.list;
 
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.portlet.PortletRequest;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DateFormatUtils;
-import org.apache.commons.lang.time.DateUtils;
-
 import fr.toutatice.portail.cms.nuxeo.api.NuxeoController;
 import fr.toutatice.portail.cms.nuxeo.api.VocabularyEntry;
 import fr.toutatice.portail.cms.nuxeo.api.VocabularyHelper;
 import fr.toutatice.portail.cms.nuxeo.portlets.selectors.DateSelectorPortlet;
 import fr.toutatice.portail.cms.nuxeo.portlets.selectors.VocabSelectorPortlet;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DateFormatUtils;
+import org.apache.commons.lang.time.DateUtils;
+
+import javax.portlet.PortletRequest;
+import java.text.ParseException;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * NXQL formatter.
  */
 public class NXQLFormater {
 
-    /** Frontend date pattern. */
+    /**
+     * Frontend date pattern.
+     */
     private static final String FRONTEND_DATE_PATTERN = "dd/MM/yyyy";
-    /** Backend date pattern. */
+
+    /**
+     * Backend date pattern.
+     */
     private static final String BACKEND_DATE_PATTERN = "yyyy-MM-dd";
-    /** NuxeoController */
+
+    /**
+     * Advanced search enclosing keywords RegEx.
+     */
+    private static final String ADVANCED_SEARCH_ENCLOSING_KEYWORDS_REGEX = "(.* -?)?(\"[^\"]*\")( .*)?";
+
+
+    /**
+     * Advanced search enclosing keywords pattern.
+     */
+    private final Pattern advancedSearchEnclosingKeywordsPattern = Pattern.compile(ADVANCED_SEARCH_ENCLOSING_KEYWORDS_REGEX);
+
+
+    /**
+     * Nuxeo controller.
+     */
     private NuxeoController nuxeoController;
 
 
@@ -313,48 +330,71 @@ public class NXQLFormater {
      * @return formatted advanced search
      */
     public String formatAdvancedSearch(List<String> searchValues) {
-        StringBuilder builder = new StringBuilder();
+        List<String> enclosingKeywords = new ArrayList<>();
+        List<String> otherKeywords = new ArrayList<>();
+        for (String searchValue : searchValues) {
+            String remainingKeywords = searchValue;
+            Matcher matcher = this.advancedSearchEnclosingKeywordsPattern.matcher(remainingKeywords);
+            while (matcher.find()) {
+                String enclosure = matcher.group(2);
+                enclosingKeywords.add(enclosure);
+                remainingKeywords = StringUtils.remove(remainingKeywords, enclosure);
 
-        Iterator<String> itSearchValues = searchValues.iterator();
-        while (itSearchValues.hasNext()) {
-            builder.append(formatAdvancedSearch(itSearchValues.next()));
-            // Multi valued selector
-            if (itSearchValues.hasNext()) {
-                builder.append(" AND ");
+                // Loop on matcher on remaining keywords
+                matcher = this.advancedSearchEnclosingKeywordsPattern.matcher(remainingKeywords);
             }
+
+            CollectionUtils.addAll(otherKeywords, StringUtils.split(remainingKeywords));
         }
+
+        List<String> keywords = new ArrayList<>();
+        keywords.addAll(enclosingKeywords);
+        keywords.addAll(otherKeywords);
+
+        List<String> positiveKeywords;
+        List<String> negativeKeywords;
+        if (CollectionUtils.isEmpty(keywords)) {
+            positiveKeywords = null;
+            negativeKeywords = null;
+        } else {
+            positiveKeywords = keywords.stream()
+                    .map(StringUtils::trimToNull)
+                    .filter(Objects::nonNull)
+                    .filter(value -> !StringUtils.startsWith(value, "-"))
+                    .collect(Collectors.toList());
+            negativeKeywords = keywords.stream()
+                    .map(StringUtils::trimToNull)
+                    .filter(Objects::nonNull)
+                    .filter(value -> StringUtils.startsWith(value, "-"))
+                    .collect(Collectors.toList());
+        }
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("ecm:fulltext= '");
+        if (CollectionUtils.isNotEmpty(positiveKeywords) && CollectionUtils.isNotEmpty(negativeKeywords)) {
+            builder.append("(");
+        }
+        if (CollectionUtils.isNotEmpty(positiveKeywords)) {
+            builder.append(StringUtils.join(positiveKeywords, " OR "));
+        }
+        if (CollectionUtils.isNotEmpty(negativeKeywords)) {
+            builder.append(") ");
+            builder.append(StringUtils.join(negativeKeywords, " "));
+        }
+        builder.append("'");
 
         return builder.toString();
     }
-    
+
 
     /**
      * Format advanced search.
-     * 
-     * @param keyWords key words
+     *
+     * @param keywords keywords
      * @return formatted advanced search
      */
-    public String formatAdvancedSearch(String keyWords) {
-        StringBuilder builder = new StringBuilder();
-
-        String[] keyWds = StringUtils.split(keyWords);
-        Iterator<String> itKeyWords = Arrays.asList(keyWds).iterator();
-
-        while (itKeyWords.hasNext()) {
-            String keyWord = StringUtils.replace(itKeyWords.next(), "'", "\\'");
-
-            builder.append("(ecm:fulltext = '");
-            builder.append(keyWord);
-            builder.append("' OR /*+ES: INDEX(dc:title.lowercase) OPERATOR(query_string) */ dc:title = '");
-            builder.append(keyWord);
-            builder.append("*')");
-
-            if (itKeyWords.hasNext()) {
-                builder.append(" AND ");
-            }
-        }
-
-        return builder.toString();
+    public String formatAdvancedSearch(String keywords) {
+        return this.formatAdvancedSearch(Collections.singletonList(keywords));
     }
 
 }
