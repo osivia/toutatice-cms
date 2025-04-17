@@ -291,6 +291,10 @@ public class CMSService implements ICMSService {
         CMSItem cmsItem = new CMSItem(path, domainId, webId, properties, doc);
         cmsItem.setCmsPath(doc.getPath());
 
+        if(doc.getState().equals("deleted")) {
+            cmsItem.setDeleted(true);
+        }
+
         // CMS item type
         DocumentType type = this.customizer.getCMSItemTypes().get(doc.getType());
         cmsItem.setType(type);
