@@ -1,5 +1,5 @@
 /*
-* (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
+ * (C) Copyright 2014 Académie de Rennes (http://www.ac-rennes.fr/), OSIVIA (http://www.osivia.com) and others.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -13,21 +13,33 @@
  */
 package fr.toutatice.portail.cms.nuxeo.portlets.service;
 
-import java.io.File;
-import java.text.ParseException;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Pattern;
-
-import javax.naming.Name;
-import javax.portlet.PortletContext;
-import javax.portlet.PortletRequest;
-import javax.portlet.PortletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
 import fr.toutatice.portail.cms.nuxeo.api.*;
+import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
+import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
+import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindowHelper;
+import fr.toutatice.portail.cms.nuxeo.api.domain.INavigationAdapterModule;
+import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
+import fr.toutatice.portail.cms.nuxeo.api.services.*;
+import fr.toutatice.portail.cms.nuxeo.portlets.cms.ExtendedDocumentInfos;
+import fr.toutatice.portail.cms.nuxeo.portlets.cms.NuxeoDocumentContextImpl;
+import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.commands.NuxeoCommandDelegate;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.BrowserAdapter;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationHelper;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand.WebConfigurationType;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.*;
+import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
+import fr.toutatice.portail.cms.nuxeo.portlets.forms.ViewProcedurePortlet;
+import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
+import fr.toutatice.portail.cms.nuxeo.portlets.publish.RequestPublishStatus;
+import fr.toutatice.portail.cms.nuxeo.portlets.reorder.ReorderDocumentsPortlet;
+import fr.toutatice.portail.cms.nuxeo.portlets.sharing.ResolveSharingLinkCommand;
+import fr.toutatice.portail.cms.nuxeo.portlets.statistics.StatisticsCmsServiceDelegation;
+import fr.toutatice.portail.cms.nuxeo.service.editablewindow.*;
+import fr.toutatice.portail.cms.nuxeo.service.user.UserPreferencesDelegation;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -54,11 +66,7 @@ import org.osivia.portal.api.PortalException;
 import org.osivia.portal.api.batch.IBatchService;
 import org.osivia.portal.api.cache.services.CacheInfo;
 import org.osivia.portal.api.cache.services.ICacheService;
-import org.osivia.portal.api.cms.DocumentContext;
-import org.osivia.portal.api.cms.DocumentType;
-import org.osivia.portal.api.cms.EcmDocument;
-import org.osivia.portal.api.cms.Symlink;
-import org.osivia.portal.api.cms.Symlinks;
+import org.osivia.portal.api.cms.*;
 import org.osivia.portal.api.context.PortalControllerContext;
 import org.osivia.portal.api.directory.v2.DirServiceFactory;
 import org.osivia.portal.api.directory.v2.model.Group;
@@ -74,37 +82,14 @@ import org.osivia.portal.api.page.PageParametersEncoder;
 import org.osivia.portal.api.panels.PanelPlayer;
 import org.osivia.portal.api.player.Player;
 import org.osivia.portal.api.statistics.SpaceStatistics;
-import org.osivia.portal.api.taskbar.ITaskbarService;
-import org.osivia.portal.api.taskbar.TaskbarFactory;
-import org.osivia.portal.api.taskbar.TaskbarItem;
-import org.osivia.portal.api.taskbar.TaskbarItemRestriction;
-import org.osivia.portal.api.taskbar.TaskbarItemType;
-import org.osivia.portal.api.taskbar.TaskbarItems;
-import org.osivia.portal.api.taskbar.TaskbarTask;
+import org.osivia.portal.api.taskbar.*;
 import org.osivia.portal.api.theming.TabGroup;
 import org.osivia.portal.api.theming.TemplateAdapter;
 import org.osivia.portal.api.urls.IPortalUrlFactory;
 import org.osivia.portal.api.urls.Link;
 import org.osivia.portal.api.urls.PortalUrlType;
 import org.osivia.portal.api.user.UserPreferences;
-import org.osivia.portal.core.cms.BinaryDelegation;
-import org.osivia.portal.core.cms.BinaryDescription;
-import org.osivia.portal.core.cms.CMSBinaryContent;
-import org.osivia.portal.core.cms.CMSConfigurationItem;
-import org.osivia.portal.core.cms.CMSEditableWindow;
-import org.osivia.portal.core.cms.CMSException;
-import org.osivia.portal.core.cms.CMSItem;
-import org.osivia.portal.core.cms.CMSObjectPath;
-import org.osivia.portal.core.cms.CMSPage;
-import org.osivia.portal.core.cms.CMSPublicationInfos;
-import org.osivia.portal.core.cms.CMSServiceCtx;
-import org.osivia.portal.core.cms.DocumentMetadata;
-import org.osivia.portal.core.cms.DocumentsMetadata;
-import org.osivia.portal.core.cms.DomainContextualization;
-import org.osivia.portal.core.cms.ICMSService;
-import org.osivia.portal.core.cms.NavigationItem;
-import org.osivia.portal.core.cms.RegionInheritance;
-import org.osivia.portal.core.cms.Satellite;
+import org.osivia.portal.core.cms.*;
 import org.osivia.portal.core.constants.InternalConstants;
 import org.osivia.portal.core.context.ControllerContextAdapter;
 import org.osivia.portal.core.page.PageProperties;
@@ -113,53 +98,18 @@ import org.osivia.portal.core.profils.IProfilManager;
 import org.osivia.portal.core.utils.URLUtils;
 import org.osivia.portal.core.web.IWebIdService;
 
-import fr.toutatice.portail.cms.nuxeo.api.cms.NuxeoDocumentContext;
-import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindow;
-import fr.toutatice.portail.cms.nuxeo.api.domain.EditableWindowHelper;
-import fr.toutatice.portail.cms.nuxeo.api.domain.INavigationAdapterModule;
-import fr.toutatice.portail.cms.nuxeo.api.forms.IFormsService;
-import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoCommandService;
-import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoService;
-import fr.toutatice.portail.cms.nuxeo.api.services.INuxeoServiceCommand;
-import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandContext;
-import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoCommandServiceFactory;
-import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoConnectionProperties;
-import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoSatelliteConnectionProperties;
-import fr.toutatice.portail.cms.nuxeo.api.services.NuxeoServiceFactory;
-import fr.toutatice.portail.cms.nuxeo.api.services.TaskDirective;
-import fr.toutatice.portail.cms.nuxeo.portlets.cms.ExtendedDocumentInfos;
-import fr.toutatice.portail.cms.nuxeo.portlets.cms.NuxeoDocumentContextImpl;
-import fr.toutatice.portail.cms.nuxeo.portlets.commands.DocumentFetchPublishedCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.commands.NuxeoCommandDelegate;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.CustomizationPluginMgr;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.DefaultCMSCustomizer;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.BrowserAdapter;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationHelper;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.customizer.helpers.WebConfigurationQueryCommand.WebConfigurationType;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.DocumentFetchLiveCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.FetchDocumentByUUIDCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.FileContentCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.InternalPictureCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.PictureContentCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.PutInTrashDocumentCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.document.helpers.DocumentHelper;
-import fr.toutatice.portail.cms.nuxeo.portlets.forms.ViewProcedurePortlet;
-import fr.toutatice.portail.cms.nuxeo.portlets.move.MoveDocumentPortlet;
-import fr.toutatice.portail.cms.nuxeo.portlets.publish.RequestPublishStatus;
-import fr.toutatice.portail.cms.nuxeo.portlets.reorder.ReorderDocumentsPortlet;
-import fr.toutatice.portail.cms.nuxeo.portlets.sharing.ResolveSharingLinkCommand;
-import fr.toutatice.portail.cms.nuxeo.portlets.statistics.StatisticsCmsServiceDelegation;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.AskSetOnLineCommand;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.CancelWorkflowCommand;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentAddComplexPropertyCommand;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentDeleteCommand;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentRemovePropertyCommand;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.DocumentUpdatePropertiesCommand;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.SetOffLineCommand;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.SetOnLineCommand;
-import fr.toutatice.portail.cms.nuxeo.service.editablewindow.ValidationPublishCommand;
-import fr.toutatice.portail.cms.nuxeo.service.user.UserPreferencesDelegation;
+import javax.naming.Name;
+import javax.portlet.PortletContext;
+import javax.portlet.PortletRequest;
+import javax.portlet.PortletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import java.io.File;
+import java.text.ParseException;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 /**
  * CMS service Toutatice implementation.
@@ -168,18 +118,26 @@ import fr.toutatice.portail.cms.nuxeo.service.user.UserPreferencesDelegation;
  */
 public class CMSService implements ICMSService {
 
-    /** Extended document informations request attribute prefix. */
+    /**
+     * Extended document informations request attribute prefix.
+     */
     private static final String EXTENDED_DOCUMENT_INFOS_ATTRIBUTE_PREFIX = "osivia.cms.extendedDocumentInfos.";
 
 
-    /** Logger. */
+    /**
+     * Logger.
+     */
     private static final Log LOG = LogFactory.getLog(CMSService.class);
 
-    /** Slash separator. */
+    /**
+     * Slash separator.
+     */
     private static final String SLASH = "/";
 
 
-    /** Portlet context. */
+    /**
+     * Portlet context.
+     */
     private final PortletContext portletCtx;
     private INuxeoCommandService nuxeoCommandService;
     private INuxeoService nuxeoService;
@@ -188,23 +146,41 @@ public class CMSService implements ICMSService {
     private DefaultCMSCustomizer customizer;
     private IPortalUrlFactory urlFactory;
 
-    /** Taskbar service. */
+    /**
+     * Taskbar service.
+     */
     private final ITaskbarService taskbarService;
-    /** Forms service. */
+    /**
+     * Forms service.
+     */
     private final IFormsService formsService;
-    /** Person service. */
+    /**
+     * Person service.
+     */
     private final PersonService personService;
-    /** Directory group service. */
+    /**
+     * Directory group service.
+     */
     private final GroupService groupService;
-    /** Documents discovery service. */
+    /**
+     * Documents discovery service.
+     */
     private final DocumentsDiscoveryService documentsDiscoveryService;
-    /** Statistics CMS service delegation. */
+    /**
+     * Statistics CMS service delegation.
+     */
     private final StatisticsCmsServiceDelegation statisticsServiceDelegation;
-    /** Statistics CMS service delegation. */
+    /**
+     * Statistics CMS service delegation.
+     */
     private final UserPreferencesDelegation prefsDelegation;
-    /** name of the temp files used by the Binary servlet */
+    /**
+     * name of the temp files used by the Binary servlet
+     */
     private final Map<String, Date> cachedTempFiles;
-    /** Delay after temp files deletion */
+    /**
+     * Delay after temp files deletion
+     */
     private final long cachedTempFilesDelay;
 
 
@@ -254,10 +230,10 @@ public class CMSService implements ICMSService {
     /**
      * Create CMS item.
      *
-     * @param cmsCtx CMS context
-     * @param path CMS path
+     * @param cmsCtx      CMS context
+     * @param path        CMS path
      * @param displayName display name
-     * @param doc Nuxeo document
+     * @param doc         Nuxeo document
      * @return CMS item
      * @throws CMSException
      */
@@ -275,7 +251,7 @@ public class CMSService implements ICMSService {
         String webId = doc.getString("ttc:webid");
 
         // For selectors saved in the doc
-        if(doc.getString("ttc:selectors") != null) {
+        if (doc.getString("ttc:selectors") != null) {
             try {
                 PageParametersEncoder.decodeProperties(doc.getString("ttc:selectors"));
                 properties.put("selectors", doc.getString("ttc:selectors"));
@@ -291,7 +267,7 @@ public class CMSService implements ICMSService {
         CMSItem cmsItem = new CMSItem(path, domainId, webId, properties, doc);
         cmsItem.setCmsPath(doc.getPath());
 
-        if(doc.getState().equals("deleted")) {
+        if (StringUtils.equals("deleted", doc.getState())) {
             cmsItem.setDeleted(true);
         }
 
@@ -306,10 +282,10 @@ public class CMSService implements ICMSService {
     /**
      * Create CMS item.
      *
-     * @param cmsContext CMS context
-     * @param path path
-     * @param displayName display name
-     * @param document document
+     * @param cmsContext       CMS context
+     * @param path             path
+     * @param displayName      display name
+     * @param document         document
      * @param publicationInfos publications infos
      * @return CMS item
      * @throws CMSException
@@ -332,10 +308,10 @@ public class CMSService implements ICMSService {
     /**
      * Create CMS navigation item.
      *
-     * @param cmsCtx CMS context
-     * @param path CMS path
-     * @param displayName display name
-     * @param document Nuxeo document
+     * @param cmsCtx           CMS context
+     * @param path             CMS path
+     * @param displayName      display name
+     * @param document         Nuxeo document
      * @param publishSpacePath publish space path
      * @return CMS navigation item
      * @throws CMSException
@@ -472,10 +448,10 @@ public class CMSService implements ICMSService {
                     commandCtx.setCacheType(CacheInfo.CACHE_SCOPE_PORTLET_CONTEXT);
                 }
             }
-            
-        
+
+
         }
-        
+
         commandCtx.setSatellite(cmsCtx.getSatellite());
 
 
@@ -498,75 +474,75 @@ public class CMSService implements ICMSService {
      * Fetch content.
      *
      * @param cmsContext CMS context
-     * @param path path
+     * @param path       path
      * @return CMS item
      * @throws Exception
      */
-	private CMSItem fetchContent(CMSServiceCtx cmsContext, String path) throws Exception {
-		// CMS item
-		CMSItem cmsItem;
+    private CMSItem fetchContent(CMSServiceCtx cmsContext, String path) throws Exception {
+        // CMS item
+        CMSItem cmsItem;
 
-		// Saved scope
-		String savedScope = cmsContext.getScope();
-		try {
-			boolean saveAsync = cmsContext.isAsyncCacheRefreshing();
+        // Saved scope
+        String savedScope = cmsContext.getScope();
+        try {
+            boolean saveAsync = cmsContext.isAsyncCacheRefreshing();
 
-			cmsContext.setAsyncCacheRefreshing(false);
+            cmsContext.setAsyncCacheRefreshing(false);
 
-			// Publication infos
-			CMSPublicationInfos publicationInfos = this.getPublicationInfos(cmsContext, path);
-			path = publicationInfos.getDocumentPath();
+            // Publication infos
+            CMSPublicationInfos publicationInfos = this.getPublicationInfos(cmsContext, path);
+            path = publicationInfos.getDocumentPath();
 
-			cmsContext.setAsyncCacheRefreshing(saveAsync);
+            cmsContext.setAsyncCacheRefreshing(saveAsync);
 
-			Satellite savedSatellite = cmsContext.getSatellite();
-			try {
+            Satellite savedSatellite = cmsContext.getSatellite();
+            try {
 
-				Satellite satellite = publicationInfos.getSatellite();
-				cmsContext.setSatellite(satellite);
+                Satellite satellite = publicationInfos.getSatellite();
+                cmsContext.setSatellite(satellite);
 
-				boolean haveToGetLive = "1".equals(cmsContext.getDisplayLiveVersion());
+                boolean haveToGetLive = "1".equals(cmsContext.getDisplayLiveVersion());
 
-				if (publicationInfos.getDocumentPath().equals(cmsContext.getForcedLivePath())
-						|| publicationInfos.getLiveId().equals(cmsContext.getForcedLivePath())) {
-					haveToGetLive = true;
-				}
+                if (publicationInfos.getDocumentPath().equals(cmsContext.getForcedLivePath())
+                        || publicationInfos.getLiveId().equals(cmsContext.getForcedLivePath())) {
+                    haveToGetLive = true;
+                }
 
-				// Document non publié et rattaché à un workspace
-				if ((!publicationInfos.isPublished() && StringUtils.isNotEmpty(publicationInfos.getPublishSpacePath())
-						&& publicationInfos.isLiveSpace())) {
-					haveToGetLive = true;
-				}
+                // Document non publié et rattaché à un workspace
+                if ((!publicationInfos.isPublished() && StringUtils.isNotEmpty(publicationInfos.getPublishSpacePath())
+                        && publicationInfos.isLiveSpace())) {
+                    haveToGetLive = true;
+                }
 
-				// Ajout JSS 20130122
-				// Document non publié et non rattaché à un espace : usage collaboratif
-				if (!publicationInfos.isPublished() && (publicationInfos.getPublishSpacePath() == null)) {
-					haveToGetLive = true;
-				}
+                // Ajout JSS 20130122
+                // Document non publié et non rattaché à un espace : usage collaboratif
+                if (!publicationInfos.isPublished() && (publicationInfos.getPublishSpacePath() == null)) {
+                    haveToGetLive = true;
+                }
 
-				cmsContext.setScope("superuser_context");
+                cmsContext.setScope("superuser_context");
 
-				// Nuxeo command
-				INuxeoCommand nuxeoCommand;
-				if (haveToGetLive) {
-					nuxeoCommand = new DocumentFetchLiveCommand(path, "Read");
-				} else {
-					nuxeoCommand = new DocumentFetchPublishedCommand(path);
-				}
+                // Nuxeo command
+                INuxeoCommand nuxeoCommand;
+                if (haveToGetLive) {
+                    nuxeoCommand = new DocumentFetchLiveCommand(path, "Read");
+                } else {
+                    nuxeoCommand = new DocumentFetchPublishedCommand(path);
+                }
 
-				// Document
-				Document document = (Document) this.executeNuxeoCommand(cmsContext, nuxeoCommand);
-				// CMS item
-				cmsItem = this.createItem(cmsContext, path, document.getTitle(), document, publicationInfos);
-			} finally {
-				cmsContext.setSatellite(savedSatellite);
-			}
-		} finally {
-			cmsContext.setScope(savedScope);
-		}
+                // Document
+                Document document = (Document) this.executeNuxeoCommand(cmsContext, nuxeoCommand);
+                // CMS item
+                cmsItem = this.createItem(cmsContext, path, document.getTitle(), document, publicationInfos);
+            } finally {
+                cmsContext.setSatellite(savedSatellite);
+            }
+        } finally {
+            cmsContext.setScope(savedScope);
+        }
 
-		return cmsItem;
-	}
+        return cmsItem;
+    }
 
 
     /**
@@ -592,7 +568,7 @@ public class CMSService implements ICMSService {
             throw e;
         } catch (Exception e) {
             throw new CMSException(e);
-        } 
+        }
 
         return content;
     }
@@ -611,12 +587,12 @@ public class CMSService implements ICMSService {
         }
 
 
-        if(content.getFile() != null) {
+        if (content.getFile() != null) {
 
-            if(!(cachedTempFiles.containsKey(content.getFile().getAbsolutePath()))) {
+            if (!(cachedTempFiles.containsKey(content.getFile().getAbsolutePath()))) {
                 cachedTempFiles.put(content.getFile().getAbsolutePath(), new Date());
 
-                if(LOG.isDebugEnabled()) {
+                if (LOG.isDebugEnabled()) {
                     LOG.debug("put " + docPath + " (" + parameter + ") " + content.getFile().getAbsolutePath());
                     LOG.debug("cachedTempFiles current size is " + cachedTempFiles.size());
                 }
@@ -654,18 +630,18 @@ public class CMSService implements ICMSService {
             CMSItem containerDoc = this.fetchContent(cmsCtx, docPath);
 
             if (containerDoc != null) {
-            	
-            	Satellite savedSatellite = setSatelliteInContext(cmsCtx, docPath);
-            	
-            	try	{
-            	
-                cmsCtx.setScope("superuser_context");
 
-                pictureContent = (CMSBinaryContent) this.executeNuxeoCommand(cmsCtx, (new InternalPictureCommand((Document) containerDoc.getNativeItem(),
-                        pictureIndex)));
-            	} finally {
-            		restoreSatelliteInContext(cmsCtx, savedSatellite);
-            	}
+                Satellite savedSatellite = setSatelliteInContext(cmsCtx, docPath);
+
+                try {
+
+                    cmsCtx.setScope("superuser_context");
+
+                    pictureContent = (CMSBinaryContent) this.executeNuxeoCommand(cmsCtx, (new InternalPictureCommand((Document) containerDoc.getNativeItem(),
+                            pictureIndex)));
+                } finally {
+                    restoreSatelliteInContext(cmsCtx, savedSatellite);
+                }
             }
 
         } finally {
@@ -780,18 +756,18 @@ public class CMSService implements ICMSService {
             // Version
             Document nuxeoDocument = null;
             //try {
-                if (!"downloadVersion".equals(cmsContext.getDisplayContext())) {
-                    document = this.fetchContent(cmsContext, path);
-                    if (document != null) {
-                        // Nuxeo document
-                        nuxeoDocument = (Document) document.getNativeItem();
-                    }
-                } else {
-                    // Version
-                    FetchDocumentByUUIDCommand fetchVersion = new FetchDocumentByUUIDCommand(path);
-                    cmsContext.setScope("superuser_context");
-                    nuxeoDocument = (Document) this.executeNuxeoCommand(cmsContext, fetchVersion);
+            if (!"downloadVersion".equals(cmsContext.getDisplayContext())) {
+                document = this.fetchContent(cmsContext, path);
+                if (document != null) {
+                    // Nuxeo document
+                    nuxeoDocument = (Document) document.getNativeItem();
                 }
+            } else {
+                // Version
+                FetchDocumentByUUIDCommand fetchVersion = new FetchDocumentByUUIDCommand(path);
+                cmsContext.setScope("superuser_context");
+                nuxeoDocument = (Document) this.executeNuxeoCommand(cmsContext, fetchVersion);
+            }
             //} catch (Exception e) {
             //    LOG.error(e.getMessage(), e);
             //    throw e;
@@ -800,34 +776,34 @@ public class CMSService implements ICMSService {
 
             // File content
             if (nuxeoDocument != null) {
-            	
-            	Satellite savedSatellite = setSatelliteInContext(cmsContext, path);
 
-            	try	{
-            	
-                // Command
-                FileContentCommand command = new FileContentCommand(nuxeoDocument, fieldName);
+                Satellite savedSatellite = setSatelliteInContext(cmsContext, path);
 
-                cmsContext.setScope("superuser_context");
+                try {
 
-                if (cmsContext.isStreamingSupport()) {
-                    
-                    PropertyMap map = FileContentCommand.getFileMap(nuxeoDocument, fieldName);
-                    
-                    if (map != null) {
-                        Long length = map.getLong("length");
-                        if ((length != null) && (length > (100 * 1024l))) {
-                            command.setStreamingSupport(true);
-                            cmsContext.setScope("superuser_no_cache");
+                    // Command
+                    FileContentCommand command = new FileContentCommand(nuxeoDocument, fieldName);
+
+                    cmsContext.setScope("superuser_context");
+
+                    if (cmsContext.isStreamingSupport()) {
+
+                        PropertyMap map = FileContentCommand.getFileMap(nuxeoDocument, fieldName);
+
+                        if (map != null) {
+                            Long length = map.getLong("length");
+                            if ((length != null) && (length > (100 * 1024l))) {
+                                command.setStreamingSupport(true);
+                                cmsContext.setScope("superuser_no_cache");
+                            }
                         }
                     }
-                }
-            	
 
-                content = (CMSBinaryContent) this.executeNuxeoCommand(cmsContext, command);
-            	} finally	{
-            		restoreSatelliteInContext(cmsContext, savedSatellite);
-            	}
+
+                    content = (CMSBinaryContent) this.executeNuxeoCommand(cmsContext, command);
+                } finally {
+                    restoreSatelliteInContext(cmsContext, savedSatellite);
+                }
             } else {
                 content = null;
             }
@@ -839,39 +815,38 @@ public class CMSService implements ICMSService {
     }
 
 
-	/**
-	 * Computes the current satellite and save it into context
-	 * 
-	 * @param cmsContext
-	 * @param path
-	 * @return
-	 * @throws CMSException
-	 */
-    
-	private Satellite setSatelliteInContext(CMSServiceCtx cmsContext, String path) throws CMSException {
-		CMSPublicationInfos publicationInfos = this.getPublicationInfos(cmsContext, path);
-		
-		Satellite savedSatellite = cmsContext.getSatellite();
-		
-		Satellite satellite = publicationInfos.getSatellite();
-		cmsContext.setSatellite(satellite);
-		return savedSatellite;
-	}
+    /**
+     * Computes the current satellite and save it into context
+     *
+     * @param cmsContext
+     * @param path
+     * @return
+     * @throws CMSException
+     */
 
-	/**
-	 * Resotore previous satellite into context
-	 * 
-	 * @param cmsContext
-	 * @param path
-	 * @return
-	 * @throws CMSException
-	 */
-    
-	
-	private void restoreSatelliteInContext(CMSServiceCtx cmsContext, Satellite oldSatellite)  {
-		cmsContext.setSatellite(oldSatellite);
-	}
+    private Satellite setSatelliteInContext(CMSServiceCtx cmsContext, String path) throws CMSException {
+        CMSPublicationInfos publicationInfos = this.getPublicationInfos(cmsContext, path);
 
+        Satellite savedSatellite = cmsContext.getSatellite();
+
+        Satellite satellite = publicationInfos.getSatellite();
+        cmsContext.setSatellite(satellite);
+        return savedSatellite;
+    }
+
+    /**
+     * Resotore previous satellite into context
+     *
+     * @param cmsContext
+     * @param path
+     * @return
+     * @throws CMSException
+     */
+
+
+    private void restoreSatelliteInContext(CMSServiceCtx cmsContext, Satellite oldSatellite) {
+        cmsContext.setSatellite(oldSatellite);
+    }
 
 
     @Override
@@ -973,14 +948,13 @@ public class CMSService implements ICMSService {
             cmsCtx.setScope("superuser_context");
 
 
-
             boolean isParent = false;
 
             while (pathToCheck.contains(publishSpaceConfig.getNavigationPath())) {
                 NavigationItem navItem = navItems.get(pathToCheck);
 
 
-                if ((navItem != null) && ( (fetchSubItems || isParent) && navItem.isUnfetchedChildren())) {
+                if ((navItem != null) && ((fetchSubItems || isParent) && navItem.isUnfetchedChildren())) {
                     Document doc = (Document) this.executeNuxeoCommand(cmsCtx, (new DocumentFetchLiveCommand(pathToCheck, "Read")));
 
                     if (!idsToFetch.contains(doc.getId())) {
@@ -989,7 +963,7 @@ public class CMSService implements ICMSService {
                 }
 
 
-                  if (navItem == null) {
+                if (navItem == null) {
                     Document doc = (Document) this.executeNuxeoCommand(cmsCtx, (new DocumentFetchLiveCommand(pathToCheck, "Read")));
                     if (!idsToFetch.contains(doc.getId())) {
                         idsToFetch.add(doc.getId());
@@ -997,19 +971,15 @@ public class CMSService implements ICMSService {
 
                 }
 
-                  CMSObjectPath parentPath = CMSObjectPath.parse(pathToCheck).getParent();
-                  pathToCheck = parentPath.toString();
+                CMSObjectPath parentPath = CMSObjectPath.parse(pathToCheck).getParent();
+                pathToCheck = parentPath.toString();
 
-                  isParent = true;
+                isParent = true;
 
             }
 
 
-
-
-            if ((idsToFetch.size() > 0) || fetchRoot)
-
-            {
+            if ((idsToFetch.size() > 0) || fetchRoot) {
                 cmsCtx.setScope("__nocache");
 
                 /* appel de la commande */
@@ -1073,8 +1043,7 @@ public class CMSService implements ICMSService {
             }
 
 
-
-            if ( "1".equals(publishSpaceConfig.getProperties().get("partialLoading"))) {
+            if ("1".equals(publishSpaceConfig.getProperties().get("partialLoading"))) {
                 navItems = this.loadPartialNavigationTree(cmsCtx, publishSpaceConfig, path, false);
             } else {
                 // Plugin manager
@@ -1223,11 +1192,11 @@ public class CMSService implements ICMSService {
             // Parent identifier (necessary live to get children)
             String version = cmsContext.getDisplayLiveVersion();
             String parentId;
-            try{
+            try {
                 cmsContext.setDisplayLiveVersion("1");
                 Document parent = (Document) this.fetchContent(cmsContext, path).getNativeItem();
                 parentId = parent.getId();
-            } finally{
+            } finally {
                 cmsContext.setDisplayLiveVersion(version);
             }
 
@@ -1415,9 +1384,9 @@ public class CMSService implements ICMSService {
 
     /**
      * Get navigation item.
-     * 
+     *
      * @param items navigation items
-     * @param path navigation item path
+     * @param path  navigation item path
      * @return navigation item
      */
     private NavigationItem getNavigationItem(Map<String, NavigationItem> items, String path) {
@@ -1435,25 +1404,25 @@ public class CMSService implements ICMSService {
 
     /**
      * Get extended document informations.
-     * 
+     *
      * @param cmsContext CMS context
-     * @param path document path
+     * @param path       document path
      * @return extended document informations
      * @throws CMSException
      */
     public ExtendedDocumentInfos getExtendedDocumentInfos(CMSServiceCtx cmsContext, String path) throws CMSException {
         // HTTP servlet request
         HttpServletRequest request = cmsContext.getServletRequest();
-        
+
         // Request attribute name
         String attributeName = EXTENDED_DOCUMENT_INFOS_ATTRIBUTE_PREFIX + StringEscapeUtils.escapeHtml(path);
 
         // Get extended document informations in request
         ExtendedDocumentInfos infos = (ExtendedDocumentInfos) request.getAttribute(attributeName);
-        
+
         if (infos == null) {
             infos = new ExtendedDocumentInfos();
-            
+
             // Saved satellite
             Satellite savedSatellite = cmsContext.getSatellite();
             if (savedSatellite == null) {
@@ -1465,7 +1434,7 @@ public class CMSService implements ICMSService {
                 if (NuxeoCompatibility.isVersionGreaterOrEqualsThan(NuxeoCompatibility.VERSION_60)) {
                     // Nuxeo command
                     INuxeoCommand command = new ExtendedDocumentInfosCommand(path);
-                    
+
                     infos = (ExtendedDocumentInfos) this.executeNuxeoCommand(cmsContext, command);
                 }
             } catch (NuxeoException e) {
@@ -1474,7 +1443,7 @@ public class CMSService implements ICMSService {
                 throw e;
             } catch (Exception e) {
                 throw new CMSException(e);
-            } finally	{
+            } finally {
                 cmsContext.setSatellite(savedSatellite);
             }
 
@@ -1655,18 +1624,18 @@ public class CMSService implements ICMSService {
 
         // Inherited regions, useful in space site to propagate default regions like menus, banner
         // not used in desktop
-        Map<String, List<CMSEditableWindow>> inheritedRegions = new HashMap<String, List<CMSEditableWindow>> ();
+        Map<String, List<CMSEditableWindow>> inheritedRegions = new HashMap<String, List<CMSEditableWindow>>();
         int windowsCount = 0;
-        if(isSpaceSite) {
-	        inheritedRegions = this.getInheritedRegions(cmsContext, workingPath, publishSpacePath, sitePath, navigationScope,
-	                editionMode);
-	        for (List<CMSEditableWindow> inheritedWindows : inheritedRegions.values()) {
-	            if (CollectionUtils.isNotEmpty(inheritedWindows)) {
-	                // Add inherited region windows
-	                windows.addAll(inheritedWindows);
-	            }
-	        }
-	        windowsCount = windows.size();
+        if (isSpaceSite) {
+            inheritedRegions = this.getInheritedRegions(cmsContext, workingPath, publishSpacePath, sitePath, navigationScope,
+                    editionMode);
+            for (List<CMSEditableWindow> inheritedWindows : inheritedRegions.values()) {
+                if (CollectionUtils.isNotEmpty(inheritedWindows)) {
+                    // Add inherited region windows
+                    windows.addAll(inheritedWindows);
+                }
+            }
+            windowsCount = windows.size();
         }
 
 
@@ -1738,16 +1707,16 @@ public class CMSService implements ICMSService {
     /**
      * Get inherited regions.
      *
-     * @param cmsContext CMS context
-     * @param path current page path
+     * @param cmsContext       CMS context
+     * @param path             current page path
      * @param publishSpacePath publish space path
-     * @param sitePath site path
-     * @param navigationScope navigation scope
-     * @param editionMode edition mode
+     * @param sitePath         site path
+     * @param navigationScope  navigation scope
+     * @param editionMode      edition mode
      * @return inherited regions
      */
     private Map<String, List<CMSEditableWindow>> getInheritedRegions(CMSServiceCtx cmsContext, String path, String publishSpacePath, String sitePath,
-            String navigationScope, boolean editionMode) {
+                                                                     String navigationScope, boolean editionMode) {
         Map<String, List<CMSEditableWindow>> inheritedRegions = new HashMap<String, List<CMSEditableWindow>>();
 
         // CMS context
@@ -1798,8 +1767,8 @@ public class CMSService implements ICMSService {
     /**
      * Get page overrided regions.
      *
-     * @param cmsContext CMS context
-     * @param path current path
+     * @param cmsContext       CMS context
+     * @param path             current path
      * @param publishSpacePath publish space path
      * @return page overrided regions
      */
@@ -1829,17 +1798,17 @@ public class CMSService implements ICMSService {
     /**
      * Get page propagated regions.
      *
-     * @param cmsContext cmsContext
+     * @param cmsContext       cmsContext
      * @param overridedRegions overrided regions
-     * @param windowsCount windows count
-     * @param adapter editable window adapter
-     * @param path current path
+     * @param windowsCount     windows count
+     * @param adapter          editable window adapter
+     * @param path             current path
      * @param publishSpacePath publish space path
-     * @param editionMode edition mode indicator
+     * @param editionMode      edition mode indicator
      * @return page propagated regions
      */
     private Map<String, List<CMSEditableWindow>> getPagePropagatedRegions(CMSServiceCtx cmsContext, Set<String> overridedRegions, int windowsCount,
-            String path, String publishSpacePath, boolean editionMode) {
+                                                                          String path, String publishSpacePath, boolean editionMode) {
         Map<String, List<CMSEditableWindow>> pagePropagatedRegions = new HashMap<String, List<CMSEditableWindow>>();
 
         try {
@@ -2078,7 +2047,7 @@ public class CMSService implements ICMSService {
      */
     @Override
     public Map<String, CMSConfigurationItem> getCmsRegionsInheritedLayout(CMSServiceCtx cmsContext, String basePath, String path,
-            Set<CMSConfigurationItem> configuredLayouts)
+                                                                          Set<CMSConfigurationItem> configuredLayouts)
             throws CMSException {
         // Inherited layouts
         Map<String, CMSConfigurationItem> inheritedLayouts;
@@ -2144,7 +2113,6 @@ public class CMSService implements ICMSService {
 
         return inheritedLayouts;
     }
-
 
 
     /**
@@ -2297,32 +2265,29 @@ public class CMSService implements ICMSService {
 
     @Override
     public String getEcmDomain(CMSServiceCtx cmsCtx) {
-        
-    	// #1421 - If not specified, use current request url insteaod of nuxeo.url
-    	String fqdn = NuxeoConnectionProperties.getPublicDomainUri().toString();
-        
-        if(StringUtils.isBlank(fqdn) && cmsCtx != null && cmsCtx.getServletRequest() !=null) {
-        	
-        	String vhost = null; 
-        	
-        	// should check vhost in https instead of current url modified by the reverse proxy
-        	if(cmsCtx.getServletRequest() != null) {
-        		vhost = cmsCtx.getServletRequest().getHeader(URLUtils.VIRTUAL_HOST_REQUEST_HEADER);
-        	}
-        	
-        	
-    		if(StringUtils.isNotBlank(vhost)) {
-    			return vhost;
-    		}
 
-        	else {
-        		return cmsCtx.getRequest().getScheme() + "://" + cmsCtx.getRequest().getServerName();
-        	}
-        	
-        	
-        }
-        else {
-        	return fqdn;
+        // #1421 - If not specified, use current request url insteaod of nuxeo.url
+        String fqdn = NuxeoConnectionProperties.getPublicDomainUri().toString();
+
+        if (StringUtils.isBlank(fqdn) && cmsCtx != null && cmsCtx.getServletRequest() != null) {
+
+            String vhost = null;
+
+            // should check vhost in https instead of current url modified by the reverse proxy
+            if (cmsCtx.getServletRequest() != null) {
+                vhost = cmsCtx.getServletRequest().getHeader(URLUtils.VIRTUAL_HOST_REQUEST_HEADER);
+            }
+
+
+            if (StringUtils.isNotBlank(vhost)) {
+                return vhost;
+            } else {
+                return cmsCtx.getRequest().getScheme() + "://" + cmsCtx.getRequest().getServerName();
+            }
+
+
+        } else {
+            return fqdn;
         }
     }
 
@@ -2352,7 +2317,7 @@ public class CMSService implements ICMSService {
         } else if (command == EcmViews.createDocument) {
             url = uri.toString() + "/nxpath/default" + path + "@toutatice_create?";
         } else if (command == EcmViews.editDocument) {
-        	url = uri.toString() + "/nxpath/default" + path + "@toutatice_edit?";
+            url = uri.toString() + "/nxpath/default" + path + "@toutatice_edit?";
         } else if (command == EcmViews.editPage) {
             url = uri.toString() + "/nxpath/default" + path + "@osivia_edit_document?";
         } else if (command == EcmViews.editAttachments) {
@@ -2366,7 +2331,7 @@ public class CMSService implements ICMSService {
         } else if (command == EcmViews.viewSummary) {
             url = uri.toString() + "/nxpath/default" + path + "@view_documents?";
         } else if (command == EcmViews.shareDocument) {
-        	url = uri.toString() + "/nxpath/default" + path + "@send_notification_email?";
+            url = uri.toString() + "/nxpath/default" + path + "@send_notification_email?";
         } else if (command == EcmViews.startValidationWf) {
             url = uri.toString() + "/nxpath/default" + path + "@choose_wf?";
         } else if (command == EcmViews.followWfValidation) {
@@ -2524,25 +2489,24 @@ public class CMSService implements ICMSService {
 
         Document inputDoc;
         boolean isRemoteProxy = false;
-        
+
         PropertyList facetsProp = publishedDoc.getFacets();
-        for(Object facet : facetsProp.list()) {
-        	if(facet.toString().equals("isRemoteProxy")) {
-        		isRemoteProxy = true;
-        	}
+        for (Object facet : facetsProp.list()) {
+            if (facet.toString().equals("isRemoteProxy")) {
+                isRemoteProxy = true;
+            }
         }
-        
-        if(isRemoteProxy){
+
+        if (isRemoteProxy) {
             // Remote proxy
             inputDoc = publishedDoc;
             reloadPagePath = StringUtils.substringBeforeLast(pagePath, "/");
             cmsCtx.setDisplayLiveVersion("0");
-        }
-        else {
-        	// local proxy
+        } else {
+            // local proxy
             CMSItem cmsItem = this.getContent(cmsCtx, pagePath);
             inputDoc = (Document) cmsItem.getNativeItem();
-            
+
         }
 
         try {
@@ -2662,20 +2626,20 @@ public class CMSService implements ICMSService {
      * {@inheritDoc}
      */
     @Override
-    public Map<String, String> getNxPathParameters(String cmsPath){
+    public Map<String, String> getNxPathParameters(String cmsPath) {
         Map<String, String> parameters = new HashMap<String, String>(0);
 
-        if(StringUtils.contains(cmsPath, "?")){
+        if (StringUtils.contains(cmsPath, "?")) {
             String params = StringUtils.substringAfter(cmsPath, "?");
 
-            if(StringUtils.isNotBlank(params)){
-               String[] keysValues = StringUtils.split(params, "&");
+            if (StringUtils.isNotBlank(params)) {
+                String[] keysValues = StringUtils.split(params, "&");
 
-               for(String keyValue : keysValues){
-                   String[] keyNValue = StringUtils.split(keyValue, "=");
+                for (String keyValue : keysValues) {
+                    String[] keyNValue = StringUtils.split(keyValue, "=");
 
-                   parameters.put(keyNValue[0], keyNValue[1]);
-               }
+                    parameters.put(keyNValue[0], keyNValue[1]);
+                }
 
             }
 
@@ -2736,9 +2700,9 @@ public class CMSService implements ICMSService {
 
         try {
 
-        	this.executeNuxeoCommand(cmsCtx, new NuxeoCommandDelegate(command, doc));
-        	
-        	// On force le rechargement du cache de la page
+            this.executeNuxeoCommand(cmsCtx, new NuxeoCommandDelegate(command, doc));
+
+            // On force le rechargement du cache de la page
             String refreshCmsPath = (String) controllerContext.getAttribute(Scope.SESSION_SCOPE, EcmCommand.REDIRECTION_PATH_ATTRIBUTE);
             cmsCtx.setDisplayLiveVersion("0");
             cmsCtx.setForceReload(true);
@@ -2855,9 +2819,8 @@ public class CMSService implements ICMSService {
                         granted = publicationInfos.isManageableByUser();
                     } else if (TaskbarItemRestriction.LOGGED_USER.equals(restriction)) {
                         // Check if current user is not null (logged)
-                    	granted = cmsContext.getControllerContext().getUser() != null;
-                    }
-                    else {
+                        granted = cmsContext.getControllerContext().getUser() != null;
+                    } else {
                         // Unknown case, deny access
                         granted = false;
                     }
@@ -2884,8 +2847,8 @@ public class CMSService implements ICMSService {
      * Get children CMS items.
      *
      * @param cmsContext CMS context
-     * @param parentId parent Nuxeo document identifier
-     * @param state Nuxeo query filter context state
+     * @param parentId   parent Nuxeo document identifier
+     * @param state      Nuxeo query filter context state
      * @return CMS items
      * @throws CMSException
      */
@@ -3008,7 +2971,7 @@ public class CMSService implements ICMSService {
         Document document = (Document) cmsContext.getDoc();
         // Document path
         String path = document.getPath();
-        
+
         // Draft case
         CMSPublicationInfos publicationInfos = getPublicationInfos(cmsContext, path);
         if (publicationInfos.isDraft()) {
@@ -3354,16 +3317,16 @@ public class CMSService implements ICMSService {
 
     /**
      * Get task actors.
-     * 
+     *
      * @param user user
      * @return actors
      */
     private Set<String> getTaskActors(String user) {
-    	
-    	Set<String> actors = null;
-    	if(user != null) {
-        // 	User DN
-    		Name dn = this.personService.getEmptyPerson().buildDn(user);
+
+        Set<String> actors = null;
+        if (user != null) {
+            // 	User DN
+            Name dn = this.personService.getEmptyPerson().buildDn(user);
 
             // Search user groups
             Group criteria = this.groupService.getEmptyGroup();
@@ -3372,20 +3335,20 @@ public class CMSService implements ICMSService {
 
             // Actors
             actors = new HashSet<>((groups.size() + 1) * 2);
-            
+
             actors.add(user);
             actors.add(IFormsService.ACTOR_USER_PREFIX + user);
-            
+
             for (Group group : groups) {
-            	if(group != null) {
-    	            // Group CN
-    	            String cn = group.getCn();
-    	
-    	            actors.add(cn);
-    	            actors.add(IFormsService.ACTOR_GROUP_PREFIX + cn);
-            	}
+                if (group != null) {
+                    // Group CN
+                    String cn = group.getCn();
+
+                    actors.add(cn);
+                    actors.add(IFormsService.ACTOR_GROUP_PREFIX + cn);
+                }
             }
-    	}
+        }
         return actors;
 
     }
@@ -3485,14 +3448,14 @@ public class CMSService implements ICMSService {
 
         List<CMSEditableWindow> procedureDashboards = new ArrayList<CMSEditableWindow>();
         try {
-            
+
             String user = cmsContext.getControllerContext().getServerInvocation().getServerContext().getClientRequest().getRemoteUser();
 
             List<Name> userProfiles = personService.getPerson(user).getProfiles();
-            
+
             // Fetch document
             CMSItem pageItem = this.fetchContent(cmsContext, path);
-            
+
             Document document = (Document) pageItem.getNativeItem();
 
             PropertyList dashboards = document.getProperties().getList("pcd:dashboards");
@@ -3506,9 +3469,9 @@ public class CMSService implements ICMSService {
 
                     String name = dashboardM.getString("name");
                     List<Object> groupsList = dashboardM.getList("groups").list();
-                    
+
                     // contrôle des droits
-                    if(isAuthorised(userProfiles, groupsList)){
+                    if (isAuthorised(userProfiles, groupsList)) {
                         Map<String, String> applicationProperties = new HashMap<String, String>(11);
 
                         applicationProperties.put(ViewProcedurePortlet.PROCEDURE_MODEL_ID_WINDOW_PROPERTY, webid);
@@ -3530,7 +3493,7 @@ public class CMSService implements ICMSService {
                     }
                 }
             }
-            
+
         } catch (CMSException e) {
             if (e.getErrorCode() == CMSException.ERROR_FORBIDDEN) {
                 // Do nothing
@@ -3543,10 +3506,10 @@ public class CMSService implements ICMSService {
 
         return procedureDashboards;
     }
-    
+
     /**
      * Checks if one of the userProfile is part of a group List
-     * 
+     *
      * @param userProfiles
      * @param groupsList
      * @return true if authorised
@@ -3569,8 +3532,8 @@ public class CMSService implements ICMSService {
         }
         return false;
     }
-    
-    
+
+
     /**
      * {@inheritDoc}
      */
@@ -3769,29 +3732,29 @@ public class CMSService implements ICMSService {
 
         return path;
     }
-    
-    
+
+
     /* (non-Javadoc)
-	 * @see org.osivia.portal.core.cms.ICMSService#getFoldersDisplay(javax.servlet.http.HttpSession)
-	 */
-	@Override
-	public UserPreferences getUserPreferences(PortalControllerContext context) throws PortalException {
+     * @see org.osivia.portal.core.cms.ICMSService#getFoldersDisplay(javax.servlet.http.HttpSession)
+     */
+    @Override
+    public UserPreferences getUserPreferences(PortalControllerContext context) throws PortalException {
 
         return this.prefsDelegation.getPreferences(context);
-	}
+    }
 
 
-	/* (non-Javadoc)
-	 * @see org.osivia.portal.core.cms.ICMSService#updateUserPreferences(javax.servlet.http.HttpSession)
-	 */
-	@Override
-	public void updateUserPreferences(CMSServiceCtx cmsContext, HttpSession httpSession) {
+    /* (non-Javadoc)
+     * @see org.osivia.portal.core.cms.ICMSService#updateUserPreferences(javax.servlet.http.HttpSession)
+     */
+    @Override
+    public void updateUserPreferences(CMSServiceCtx cmsContext, HttpSession httpSession) {
         if (cmsContext.getPortletCtx() == null) {
             cmsContext.setPortletCtx(this.portletCtx);
         }
-        
-		this.prefsDelegation.updateUserPreferences(cmsContext, httpSession);
-	}
+
+        this.prefsDelegation.updateUserPreferences(cmsContext, httpSession);
+    }
 
 
     @Override
@@ -3832,10 +3795,10 @@ public class CMSService implements ICMSService {
         Date current = new Date();
         List<String> deletedFiles = new ArrayList<>();
 
-        for(Entry<String, Date> file : cachedTempFiles.entrySet()) {
+        for (Entry<String, Date> file : cachedTempFiles.entrySet()) {
 
             long l = current.getTime() - file.getValue().getTime();
-            if(l > cachedTempFilesDelay) {
+            if (l > cachedTempFilesDelay) {
                 File fileToDelete = new File(file.getKey());
                 boolean deleted = fileToDelete.delete();
                 deletedFiles.add(file.getKey());
@@ -3843,13 +3806,13 @@ public class CMSService implements ICMSService {
 
         }
 
-        for(String deletedFile : deletedFiles) {
+        for (String deletedFile : deletedFiles) {
             cachedTempFiles.remove(deletedFile);
-            if(LOG.isDebugEnabled()) {
+            if (LOG.isDebugEnabled()) {
                 LOG.debug("remove " + deletedFile);
             }
         }
-        if(LOG.isDebugEnabled()) {
+        if (LOG.isDebugEnabled()) {
             LOG.debug("cachedTempFiles current size is " + cachedTempFiles.size());
         }
     }
