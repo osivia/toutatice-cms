@@ -12,6 +12,7 @@
 package org.nuxeo.ecm.automation.client.jaxrs.impl;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.Map;
 
 import javax.mail.internet.MimeMultipart;
@@ -122,7 +123,7 @@ public class HttpConnector implements Connector {
                 } else {
                     try {
                         entity = new StringEntity(obj.toString(), "UTF-8");
-                    } catch (UnsupportedEncodingException e) {
+                    } catch (UnsupportedCharsetException e) {
                         throw new Error("Cannot encode into UTF-8", e);
                     }
                 }
