@@ -1023,7 +1023,10 @@ public class CMSService implements ICMSService {
     public CMSItem getPortalNavigationItem(CMSServiceCtx cmsCtx, String publishSpacePath, String path) throws CMSException {
         String savedScope = cmsCtx.getScope();
 
-        if ((cmsCtx.getScope() == null) || "__nocache".equals(cmsCtx.getScope())) {
+        String remoteUser = cmsCtx.getServerInvocation().getServerContext().getClientRequest().getRemoteUser();
+        if (remoteUser == null) {
+            cmsCtx.setScope("anonymous");
+        } else if ((cmsCtx.getScope() == null) || "__nocache".equals(cmsCtx.getScope())) {
             cmsCtx.setScope("user_session");
         }
 
@@ -1101,14 +1104,16 @@ public class CMSService implements ICMSService {
     @SuppressWarnings("unchecked")
     @Override
     public List<CMSItem> getPortalNavigationSubitems(CMSServiceCtx cmsCtx, String publishSpacePath, String path) throws CMSException {
-
         String savedScope = cmsCtx.getScope();
 
-        if ((cmsCtx.getScope() == null) || "__nocache".equals(cmsCtx.getScope())) {
+        String remoteUser = cmsCtx.getServerInvocation().getServerContext().getClientRequest().getRemoteUser();
+        if (remoteUser == null) {
+            cmsCtx.setScope("anonymous");
+        } else if ((cmsCtx.getScope() == null) || "__nocache".equals(cmsCtx.getScope())) {
             cmsCtx.setScope("user_session");
         }
-        try {
 
+        try {
             CMSItem publishSpaceConfig = this.getSpaceConfig(cmsCtx, publishSpacePath);
 
             if (publishSpaceConfig == null) {
